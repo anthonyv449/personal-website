@@ -7,7 +7,8 @@ const App = () => {
   useEffect(() => {
     fetch("/content.json")
       .then((res) => res.json())
-      .then((data) => setContent(data));
+      .then((data) => setContent(data))
+      .catch((error) => console.log(error));
   }, []);
 
   if (!content) return <div>Loading...</div>;
