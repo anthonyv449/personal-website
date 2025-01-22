@@ -97,7 +97,7 @@ function createHostConfig(remotesMap) {
     },
     plugins: [
       new HtmlWebpackPlugin({
-        template: "/host/public/index.html",
+        template: path.resolve(__dirname, "../host/public/index.html"),
       }),
       new ModuleFederationPlugin({
         name: "host",
