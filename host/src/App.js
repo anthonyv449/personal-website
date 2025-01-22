@@ -7,7 +7,8 @@ const App = () => {
   useEffect(() => {
     fetch("/content.json")
       .then((res) => res.json())
-      .then((data) => setContent(data));
+      .then((data) => setContent(data))
+      .catch((error) => console.log(error));
   }, []);
 
   if (!content) return <div>Loading...</div>;
@@ -16,11 +17,12 @@ const App = () => {
     <Router>
       <nav>
         {content.pages.map((page) => (
-          <Link key={page.id} to={page.url}>
+          <Link key={page.id} to={page.url} style={{ margin: "10px" }}>
             {page.title}
           </Link>
         ))}
       </nav>
+
       <Routes>
         {content.pages.map((page) => (
           <Route

@@ -1,35 +1,62 @@
-module.exports = {
-    entry: "./host/src/index.js", // Ensure this is the correct path
-    mode: "development",
-    output: {
-      filename: "bundle.js",
-      publicPath: "/",
-    },
-    resolve: {
-      extensions: [".js", ".jsx"], // Allow .js and .jsx extensions
-    },
-    module: {
-      rules: [
-        {
-            test: /\.(js|jsx)$/, // Match .js and .jsx files
-            exclude: /node_modules/,
-            use: {
-              loader: "babel-loader",
-              options: {
-                presets: ["@babel/preset-env", "@babel/preset-react"], // Ensure React preset is included
-              },
-            },
+// webpack.config.js
+import path from "path";
+import { fileURLToPath } from "url";
+import HtmlWebpackPlugin from "html-webpack-plugin";
+// Import ModuleFederationPlugin from its path (instead of from 'webpack')
+import ModuleFederationPlugin from "webpack/lib/container/ModuleFederationPlugin.js";
+
+// Derive __dirname in ESM
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+export default {
+  entry: "./host/src/index.js",
+  mode: "development",
+  devServer: {
+    static: path.join(__dirname, "public"),
+    historyApiFallback: true,
+    port: 3000,
+    hot: true,
+    open: true,
+  },
+  output: {
+    filename: "bundle.js",
+    publicPath: "/",
+  },
+  module: {
+    rules: [
+      {
+        test: /\.(js|jsx)$/,
+        exclude: /node_modules/,
+        use: {
+          loader: "babel-loader",
+          options: {
+            presets: ["@babel/preset-env", "@babel/preset-react"],
           },
-          {
-            test: /\.css$/, // For CSS files
-            use: ["style-loader", "css-loader"],
-          },
-      ],
-    },
-    devServer: {
-      static: "./public",
-      port: 3000,
-      historyApiFallback: true, // For React Router support
-    },
-  };
-  
+        },
+      },
+      {
+        test: /\.css$/,
+        use: ["style-loader", "css-loader"],
+      },
+    ],
+  },
+  resolve: {
+    extensions: [".js", ".jsx"],
+  },
+  plugins: [
+    new HtmlWebpackPlugin({
+      template: "/host/public/index.html",
+    }),
+    new ModuleFederationPlugin({
+      name: "host",
+      remotes: {
+        remote1: "remote1@http://localhost:3001/remoteEntry.js",
+      },
+      shared: {
+        react: { singleton: true, eager: true },
+        "react-dom": { singleton: true, eager: true },
+      },
+    }),
+  ],
+};
