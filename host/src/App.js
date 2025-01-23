@@ -19,11 +19,7 @@ const App = () => {
       <Navbar pages={content.pages} />
       <Routes>
         {content.pages.map((page) => (
-          <Route
-            key={page.id}
-            path={page.url}
-            element={<h1>{page.sections[0].content.heading}</h1>}
-          />
+          <Route key={page.id} path={page.url} />
         ))}
       </Routes>
     </Router>
