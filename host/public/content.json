@@ -1,36 +1,19 @@
 {
-    "pages": [
-      {
-        "id": "home",
-        "title": "Home",
-        "path": "/",
-        "sections": [
-          {
-            "id": "hero",
-            "type": "HeroSection",
-            "content": {
-              "heading": "Welcome to the Host App",
-              "subheading": "Explore the world of possibilities",
-              "image": "/images/hero.jpg"
-            }
-          }
-        ]
-      },
-      {
-        "id": "about",
-        "title": "About",
-        "path": "/about",
-        "sections": [
-          {
-            "id": "about-info",
-            "type": "TextSection",
-            "content": {
-              "heading": "About Us",
-              "description": "This is an example of a multi-page React app using dynamic content."
-            }
-          }
-        ]
-      }
-    ]
-  }
-  
+  "pages": [
+    {
+      "id": "home",
+      "title": "Home",
+      "path": "/"
+    },
+    {
+      "id": "about",
+      "title": "About",
+      "path": "/about"
+    },
+    {
+      "id": "resume",
+      "title": "Resume",
+      "path": "/resume"
+    }
+  ]
+}

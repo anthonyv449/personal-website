@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
-import { BrowserRouter as Router, Routes, Route, Link } from "react-router-dom";
-
+import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import Navbar from "./Navbar.js";
 const App = () => {
   const [content, setContent] = useState(null);
 
@@ -15,21 +15,11 @@ const App = () => {
 
   return (
     <Router>
-      <nav>
-        {content.pages.map((page) => (
-          <Link key={page.id} to={page.url} style={{ margin: "10px" }}>
-            {page.title}
-          </Link>
-        ))}
-      </nav>
-
+      {/* Pass `content.pages` (array of pages) to the NavBar */}
+      <Navbar pages={content.pages} />
       <Routes>
         {content.pages.map((page) => (
-          <Route
-            key={page.id}
-            path={page.url}
-            element={<h1>{page.sections[0].content.heading}</h1>}
-          />
+          <Route key={page.id} path={page.url} />
         ))}
       </Routes>
     </Router>
