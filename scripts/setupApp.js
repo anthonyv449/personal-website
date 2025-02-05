@@ -3,70 +3,39 @@ import webpack from "webpack";
 import WebpackDevServer from "webpack-dev-server";
 import path from "path";
 import { fileURLToPath } from "url";
+import fs from "fs/promises";
 import HtmlWebpackPlugin from "html-webpack-plugin";
 import ModuleFederationPlugin from "webpack/lib/container/ModuleFederationPlugin.js";
 
-/**
- * Utility for ESM __dirname
- */
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 /**
- * Define your remotes.
- * Each remote has:
- *  - name         -> The remote's Module Federation name (e.g., "remote1")
- *  - port         -> Unique port where this remote will run
- *  - folder       -> The path to this remote's folder
- *  - entry        -> The path to the remote's main React entry file
- *  - publicDir    -> The path to the remote's public folder
- *  - exposes      -> An object specifying Module Federation "exposes"
+ * Load remotes from a local JSON file (using fs/promises).
  */
-const REMOTES = [
-  {
-    name: "remote1",
-    port: 3001,
-    folder: "remotes/remote-1",
-    entry: "./remotes/remote-1/src/index.js",
-    publicDir: "./remotes/remote-1/public",
-    exposes: {
-      "./Component": "./remotes/remote-1/src/Component.js",
-    },
-  },
-  {
-    name: "remote2",
-    port: 3002,
-    folder: "remotes/remote-2",
-    entry: "./remotes/remote-2/src/index.js",
-    publicDir: "./remotes/remote-2/public",
-    exposes: {
-      "./Component": "./remotes/remote-2/src/Component.js",
-    },
-  },
-  {
-    name: "remote3",
-    port: 3003,
-    folder: "remotes/remote-3",
-    entry: "./remotes/remote-3/src/index.js",
-    publicDir: "./remotes/remote-3/public",
-    exposes: {
-      "./Component": "./remotes/remote-3/src/Component.js",
-    },
-  },
-];
+async function loadRemotes() {
+  try {
+    const filePath = "./host/public/remotes.json";
+    const jsonStr = await fs.readFile(filePath, "utf-8"); // read file from disk
+    return JSON.parse(jsonStr);
+  } catch (error) {
+    console.error("Failed to load remotes.json:", error);
+    return [];
+  }
+}
 
 /**
  * Create the in-memory Webpack config for the HOST application.
- * We assume it lives in `./host/` with an `index.js` and `public/` folder.
  */
 function createHostConfig(remotesMap) {
+  console.log("remotesMap", remotesMap);
   return {
     mode: "development",
-    entry: "/host/src/index.js",
+    entry: path.join(__dirname, "../host/src/index.js"),
     devServer: {
       static: path.join(__dirname, "../host/public"),
       port: 3000,
-      open: true, // auto-open browser for the host
+      open: true,
       hot: true,
       historyApiFallback: true,
     },
@@ -106,13 +75,13 @@ function createHostConfig(remotesMap) {
           react: {
             singleton: true,
             eager: true,
-            requiredVersion: "^19.0.0", // or from package.json
+            requiredVersion: "^19.0.0",
             strictVersion: true,
           },
           "react-dom": {
             singleton: true,
             eager: true,
-            requiredVersion: "^19.0.0", // or from package.json
+            requiredVersion: "^19.0.0",
             strictVersion: true,
           },
           lodash: {
@@ -124,17 +93,14 @@ function createHostConfig(remotesMap) {
   };
 }
 
-/**
- * Create the in-memory Webpack config for a given remote definition.
- */
 function createRemoteConfig(remote) {
+  console.log("remote", remote);
   return {
     mode: "development",
     entry: remote.entry,
     devServer: {
-      static: path.resolve(__dirname, remote.publicDir),
       port: remote.port,
-      open: false, // can set to true, but multiple remotes => multiple tabs
+      open: false,
       hot: true,
     },
     output: {
@@ -164,7 +130,8 @@ function createRemoteConfig(remote) {
     },
     plugins: [
       new HtmlWebpackPlugin({
-        template: path.join(__dirname, remote.publicDir, "index.html"),
+        // Generates a minimal HTML if you omit 'template'
+        title: "Remote Minimal",
       }),
       new ModuleFederationPlugin({
         name: remote.name,
@@ -174,13 +141,13 @@ function createRemoteConfig(remote) {
           react: {
             singleton: true,
             eager: true,
-            requiredVersion: "^19.0.0", // or from package.json
+            requiredVersion: "^19.0.0",
             strictVersion: true,
           },
           "react-dom": {
             singleton: true,
             eager: true,
-            requiredVersion: "^19.0.0", // or from package.json
+            requiredVersion: "^19.0.0",
             strictVersion: true,
           },
           lodash: {
@@ -193,9 +160,6 @@ function createRemoteConfig(remote) {
   };
 }
 
-/**
- * Helper to run Webpack Dev Server in-memory.
- */
 function runDevServer(config) {
   return new Promise((resolve, reject) => {
     const compiler = webpack(config);
@@ -211,9 +175,6 @@ function runDevServer(config) {
   });
 }
 
-/**
- * Start the host dev server, referencing only the selected remotes.
- */
 async function startHost(selectedRemotes) {
   // Build the "remotes" object for ModuleFederationPlugin in the host
   const remotesMap = {};
@@ -223,47 +184,42 @@ async function startHost(selectedRemotes) {
     ] = `${remote.name}@http://localhost:${remote.port}/remoteEntry.js`;
   });
 
-  // Create the ephemeral host config
   const hostConfig = createHostConfig(remotesMap);
-
-  // Run the dev server
   await runDevServer(hostConfig);
   console.log("Host is running at http://localhost:3000");
 }
 
-/**
- * Start each selected remote in parallel.
- */
 async function startRemotes(selectedRemotes) {
   await Promise.all(
     selectedRemotes.map(async (remote) => {
       const config = createRemoteConfig(remote);
+      console.log("config", config.plugins[1]);
       await runDevServer(config);
       console.log(`${remote.name} running at http://localhost:${remote.port}`);
     })
   );
 }
 
-/**
- * Main interactive function:
- *  - Prompts which remotes to run (checkbox).
- *  - Always starts the host.
- *  - Starts only the chosen remotes in parallel.
- */
 async function setupApp() {
   try {
+    const remotes = await loadRemotes();
+    if (!remotes || remotes.length === 0) {
+      console.log("No remotes found in remotes.json");
+      return;
+    }
+
     // Prompt user to select remotes
     const { selectedNames } = await inquirer.prompt([
       {
         type: "checkbox",
         name: "selectedNames",
         message: "Select which remotes to run:",
-        choices: REMOTES.map((r) => r.name),
+        choices: remotes.map((r) => r.name),
         default: [],
       },
     ]);
 
-    const selectedRemotes = REMOTES.filter((r) =>
+    const selectedRemotes = remotes.filter((r) =>
       selectedNames.includes(r.name)
     );
 
@@ -288,5 +244,4 @@ async function setupApp() {
   }
 }
 
-// Execute
 setupApp();
