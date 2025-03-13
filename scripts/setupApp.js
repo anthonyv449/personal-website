@@ -94,70 +94,76 @@ function createHostConfig(remotesMap) {
 }
 
 function createRemoteConfig(remote) {
-  console.log("remote", remote);
-  return {
-    mode: "development",
-    entry: remote.entry,
-    devServer: {
-      port: remote.port,
-      open: false,
-      hot: true,
-    },
-    output: {
-      filename: "bundle.js",
-      publicPath: `http://localhost:${remote.port}/`,
-    },
-    module: {
-      rules: [
-        {
-          test: /\.(js|jsx)$/,
-          exclude: /node_modules/,
-          use: {
-            loader: "babel-loader",
-            options: {
-              presets: ["@babel/preset-env", "@babel/preset-react"],
+  try {
+    console.log("remote", remote);
+    return {
+      mode: "development",
+      entry: remote.entry,
+      devServer: {
+        port: remote.port,
+        open: false,
+        hot: true,
+      },
+      output: {
+        filename: "bundle.js",
+        publicPath: `http://localhost:${remote.port}/`,
+        library: { type: "var", name: remote.name },
+      },
+      module: {
+        rules: [
+          {
+            test: /\.(js|jsx)$/,
+            exclude: /node_modules/,
+            use: {
+              loader: "babel-loader",
+              options: {
+                presets: ["@babel/preset-env", "@babel/preset-react"],
+              },
             },
           },
-        },
-        {
-          test: /\.css$/,
-          use: ["style-loader", "css-loader"],
-        },
+          {
+            test: /\.css$/,
+            use: ["style-loader", "css-loader"],
+          },
+        ],
+      },
+      resolve: {
+        extensions: [".js", ".jsx"],
+      },
+      plugins: [
+        new HtmlWebpackPlugin({
+          // Generates a minimal HTML if you omit 'template'
+          title: "Remote Minimal",
+        }),
+        new ModuleFederationPlugin({
+          name: remote.name,
+          filename: "remoteEntry.js",
+          exposes: remote.exposes,
+          shared: {
+            react: {
+              singleton: true,
+              eager: true,
+              requiredVersion: "^19.0.0",
+              strictVersion: true,
+            },
+            "react-dom": {
+              singleton: true,
+              eager: true,
+              requiredVersion: "^19.0.0",
+              strictVersion: true,
+            },
+            lodash: {
+              requiredVersion: "^4.17.21",
+              singleton: false,
+            },
+          },
+        }),
       ],
-    },
-    resolve: {
-      extensions: [".js", ".jsx"],
-    },
-    plugins: [
-      new HtmlWebpackPlugin({
-        // Generates a minimal HTML if you omit 'template'
-        title: "Remote Minimal",
-      }),
-      new ModuleFederationPlugin({
-        name: remote.name,
-        filename: "remoteEntry.js",
-        exposes: remote.exposes,
-        shared: {
-          react: {
-            singleton: true,
-            eager: true,
-            requiredVersion: "^19.0.0",
-            strictVersion: true,
-          },
-          "react-dom": {
-            singleton: true,
-            eager: true,
-            requiredVersion: "^19.0.0",
-            strictVersion: true,
-          },
-          lodash: {
-            requiredVersion: "^4.17.21",
-            singleton: false,
-          },
-        },
-      }),
-    ],
-  };
+    };
+  } catch (error) {
+    console.log(error);
+    console.log("runtime error");
+  }
 }
 
 function runDevServer(config) {

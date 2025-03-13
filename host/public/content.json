@@ -4,7 +4,7 @@
       "id": "home",
       "title": "Home",
       "path": "/", 
-      "exposedModule": "./Home"
+      "exposedModule": "Home"
     }
     
   ]

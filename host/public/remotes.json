@@ -5,7 +5,7 @@
       "folder": "./remotes/home/",
       "entry": "./remotes/home/index.js",
       "exposes": {
-        "./Home": "./remotes/home/index.js"
+        "Home": "./remotes/home/index.js"
       }
     }
   ]
