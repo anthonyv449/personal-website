@@ -1,0 +1,12 @@
+[
+    {
+      "name": "Home",
+      "port": 3001,
+      "folder": "./remotes/home/",
+      "entry": "./remotes/home/index.js",
+      "exposes": {
+        "Home": "./remotes/home/index.js"
+      }
+    }
+  ]
+  

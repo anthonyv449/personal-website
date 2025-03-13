@@ -1,27 +1,29 @@
 import React, { useEffect, useState } from "react";
-import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import { BrowserRouter as Router } from "react-router-dom";
 import Navbar from "./Navbar.js";
+import AppRoutes from "./AppRoutes.js";
+
 const App = () => {
   const [content, setContent] = useState(null);
-
+  const [remotes, setRemotes] = useState(null);
   useEffect(() => {
+    // Fetch content.json which includes pages and remote configuration
     fetch("/content.json")
       .then((res) => res.json())
       .then((data) => setContent(data))
       .catch((error) => console.log(error));
+    fetch("/remotes.json")
+      .then((res) => res.json())
+      .then((data) => setRemotes(data))
+      .catch((error) => console.log(error));
   }, []);
 
-  if (!content) return <div>Loading...</div>;
+  if (!content || !remotes) return <div>Loading...</div>;
 
   return (
     <Router>
-      {/* Pass `content.pages` (array of pages) to the NavBar */}
       <Navbar pages={content.pages} />
-      <Routes>
-        {content.pages.map((page) => (
-          <Route key={page.id} path={page.url} />
-        ))}
-      </Routes>
+      <AppRoutes content={content} remotes={remotes} />
     </Router>
   );
 };
