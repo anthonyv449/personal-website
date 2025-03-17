@@ -103,10 +103,13 @@ function createRemoteConfig(remote) {
         port: remote.port,
         open: false,
         hot: true,
+        headers: {
+          "Access-Control-Allow-Origin": "*", // or specify the allowed origin(s)
+        },
       },
       output: {
         filename: "bundle.js",
-        publicPath: `http://localhost:${remote.port}/`,
+        publicPath: "auto",
         library: { type: "var", name: remote.name },
       },
       module: {

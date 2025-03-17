@@ -3,6 +3,20 @@
   "version": "1.0.0",
   "main": "./host/src/index.js",
   "type": "module",
+  "workspaces": [
+    "remotes/*",
+    "host"
+  ],
+  "babel": {
+    "presets": [
+      [
+        "@babel/preset-react",
+        {
+          "runtime": "automatic"
+        }
+      ]
+    ]
+  },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "webpack serve",
