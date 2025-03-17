@@ -21,10 +21,15 @@ const Carousel = ({ autoPlay = true, interval = 5000, children }) => {
       nextSlide();
     }, interval);
     return () => clearInterval(timer);
-  }, [autoPlay, interval, nextSlide]);
+  }, [autoPlay, interval, nextSlide, activeIndex]);
 
   return (
-    <Box position="relative" width="100%" overflow="hidden">
+    <Box
+      position="relative"
+      width="100%"
+      overflow="hidden"
+      sx={{ height: "40rem" }}
+    >
       {children.map((child, index) => (
         <Box
           key={index}
@@ -73,7 +78,6 @@ const Home = () => {
   const [items, setItems] = useState([]);
 
   useEffect(() => {
-    // Fetch the JSON file containing the image URLs and alt texts
     fetch("/GradImages/images.json")
       .then((response) => {
         if (!response.ok) {
@@ -82,27 +86,37 @@ const Home = () => {
         return response.json();
       })
       .then((data) => {
-        setItems(data);
+        // Adjust image path if needed
+        const adjustedData = data.map((item) => ({
+          ...item,
+          image: item.image.startsWith("/")
+            ? item.image
+            : `/GradImages/${item.image}`,
+        }));
+        setItems(adjustedData);
       })
       .catch((error) => {
         console.error("Error loading images:", error);
       });
   }, []);
 
-  // Optionally render a loading state while fetching
   if (items.length === 0) {
     return <Box>Loading images...</Box>;
   }
 
   return (
-    <Box my={4} color="red">
+    <Box my={4}>
       <Carousel autoPlay interval={5000}>
         {items.map((item, index) => (
-          <Paper key={index} elevation={3}>
+          <Paper key={index} elevation={3} sx={{ height: "100%" }}>
             <img
               src={item.image}
               alt={item.alt}
-              style={{ width: "100%", display: "block" }}
+              style={{
+                width: "100%",
+                height: "100%",
+                objectFit: "contain", // or "contain", depending on your preference
+              }}
             />
           </Paper>
         ))}
