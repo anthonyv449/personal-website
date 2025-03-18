@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from "react";
-import { Box, Paper, IconButton } from "@mui/material";
+import { Box, Paper, IconButton, useTheme } from "@mui/material";
 import { ArrowBackIos, ArrowForwardIos } from "@mui/icons-material";
 
 // Custom Carousel component
@@ -76,6 +76,8 @@ const Carousel = ({ autoPlay = true, interval = 5000, children }) => {
 // Home component that fetches image data and uses the custom Carousel
 const Home = () => {
   const [items, setItems] = useState([]);
+  const theme = useTheme();
+  console.log(theme);
 
   useEffect(() => {
     fetch("/GradImages/images.json")

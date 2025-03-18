@@ -90,6 +90,15 @@ function createHostConfig(remotesMap) {
           test: /\.css$/,
           use: ["style-loader", "css-loader"],
         },
+        {
+          test: /\.svg$/,
+          issuer: /\.[j]sx?$/, // ensures that only JS/TS files import svg files
+          use: [
+            {
+              loader: "@svgr/webpack",
+            },
+          ],
+        },
       ],
     },
     resolve: {
@@ -150,6 +159,15 @@ function createRemoteConfig(remote) {
           {
             test: /\.css$/,
             use: ["style-loader", "css-loader"],
+          },
+          {
+            test: /\.svg$/,
+            issuer: /\.[j]sx?$/, // ensures that only JS/TS files import svg files
+            use: [
+              {
+                loader: "@svgr/webpack",
+              },
+            ],
           },
         ],
       },
