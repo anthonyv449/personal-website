@@ -1,5 +1,7 @@
-import React, { useEffect, lazy, Suspense } from "react";
+import React, { useEffect, lazy, Suspense, useContext } from "react";
 import { Routes, Route, useLocation } from "react-router-dom";
+import { ThemeProvider } from "@mui/material";
+import { ThemeContext } from "./ThemeContext.js";
 
 // Helper to load the remoteEntry script using remote.title
 function loadRemoteEntry(remoteTitle, remoteUrl) {
@@ -39,6 +41,7 @@ function useRemoteLoader(remoteTitle, remoteUrl, pathPrefix) {
 
 // Component to load and render a remote component using Module Federation runtime API
 const RemoteRoute = ({ remote, remotesList }) => {
+  const theme = useContext(ThemeContext);
   // Use remote.title in place of remote.name
   const port = remotesList.find((r) => r.name == remote.title).port;
   useRemoteLoader(
@@ -76,7 +79,9 @@ const RemoteRoute = ({ remote, remotesList }) => {
 
   return (
     <Suspense fallback={<div>Loading remote component...</div>}>
-      <RemoteComponent />
+      <ThemeProvider theme={theme}>
+        <RemoteComponent />
+      </ThemeProvider>
     </Suspense>
   );
 };
