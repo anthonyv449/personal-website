@@ -13,6 +13,7 @@ const Navbar = ({ pages }) => {
       direction="row"
       p="0 1.025rem"
       alignItems="center"
+      borderBottom={`0.025rem solid ${theme.palette.primary.main}`}
     >
       <Grid size={10}>
         <Logo
@@ -30,7 +31,13 @@ const Navbar = ({ pages }) => {
             key={page.id}
             to={page.path}
             style={({ isActive }) => ({
-              color: isActive ? "#eeeeee" : theme.palette.primary,
+              color: isActive ? "#eeeeee" : theme.palette.primary.main,
+              background: isActive
+                ? "#222222"
+                : theme.palette.background.default,
+              borderRadius: "0.4rem",
+              padding: ".125rem .5rem",
+              textDecoration: "none",
             })}
           >
             {page.title}
