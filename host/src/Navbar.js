@@ -1,63 +1,49 @@
-import React from "react";
-import {
-  Box,
-  Grid2 as MuiGrid, // Or Grid2, depending on your MUI version
-  Link,
-  Typography,
-  IconButton,
-  TextField,
-  InputAdornment,
-} from "@mui/material";
-import SearchIcon from "@mui/icons-material/Search";
-import { Link as RouterLink } from "react-router-dom";
+import React, { useContext } from "react";
+import { Box, Typography, useTheme } from "@mui/material";
+import { NavLink } from "react-router-dom";
 
-function NavBar({ pages }) {
+const Navbar = ({ pages }) => {
+  const theme = useTheme();
   return (
-    <Box component="nav">
-      <MuiGrid
-        container
-        alignItems="center"
-        sx={{ borderBottom: "2px solid black", height: "2rem" }}
+    <Box
+      component="nav"
+      sx={{
+        height: "3rem",
+        display: "flex",
+        alignItems: "center",
+        padding: "0 1.025rem",
+      }}
+    >
+      {/* Left Side - Brand Name */}
+      <Typography
+        variant="h6"
+        sx={{
+          flexGrow: 1,
+          fontWeight: "bold",
+        }}
       >
-        {/* Left Column */}
-        <MuiGrid size={6}>
-          <Typography variant="h6">valenzuela project</Typography>
-        </MuiGrid>
+        Ant Val
+      </Typography>
 
-        {/* Right (Longer) Column */}
-        <MuiGrid container size={4} alignItems="center" justifyContent="center">
-          {/* Use Box for horizontal spacing */}
-          <MuiGrid container alignItems="center" spacing={3}>
-            {pages.map((page) => (
-              <Link
-                key={page.id}
-                component={RouterLink}
-                to={page.path}
-                sx={{ textDecoration: "none" }}
-              >
-                {page.title}
-              </Link>
-            ))}
-          </MuiGrid>
-        </MuiGrid>
-        <MuiGrid size={2}>
-          <TextField
-            variant="standard"
-            placeholder="Search..."
-            slotProps={{
-              input: {
-                endAdornment: (
-                  <InputAdornment position="start">
-                    <SearchIcon />
-                  </InputAdornment>
-                ),
-              },
-            }}
-          />
-        </MuiGrid>
-      </MuiGrid>
+      {/* Right Side - Navigation Links */}
+      <Box sx={{ display: "flex", gap: "1.025rem" }}>
+        {pages.map((page) => (
+          <NavLink
+            key={page.id}
+            to={page.path}
+            style={({ isActive }) => ({
+              background: isActive
+                ? "#222222"
+                : theme.palette.background.default,
+              color: isActive ? "#eeeeee" : theme.palette.primary,
+            })}
+          >
+            {page.title}
+          </NavLink>
+        ))}
+      </Box>
     </Box>
   );
-}
+};
 
-export default NavBar;
+export default Navbar;
