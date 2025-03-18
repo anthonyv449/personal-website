@@ -2,7 +2,6 @@
   "name": "personal-website",
   "version": "1.0.0",
   "main": "./host/src/index.js",
-  "type": "module",
   "workspaces": [
     "remotes/*",
     "host"
@@ -21,7 +20,7 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "webpack serve",
     "build": "webpack --mode production",
-    "dev": "node ./scripts/setupApp.js"
+    "dev": "node ./scripts/setupApp.mjs"
   },
   "keywords": [],
   "author": "",
