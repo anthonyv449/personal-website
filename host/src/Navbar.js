@@ -8,41 +8,37 @@ const Navbar = ({ pages }) => {
   const theme = useTheme();
   console.log(theme);
   return (
-    <Box
-      component="nav"
-      sx={{
-        height: "3rem",
-        display: "flex",
-        alignItems: "center",
-        padding: "0 1.025rem",
-      }}
+    <Grid
+      container
+      spacing={3}
+      direction="row"
+      p="0 1.025rem"
+      alignItems="center"
     >
-      <Grid container spacing={3} direction="row">
-        <Box>
-          <Logo
-            style={{
-              width: "2rem",
-              height: "2rem",
-              fill: theme.palette.primary.main,
-              stroke: theme.palette.primary.main,
-            }}
-          />
-        </Box>
-        <Box sx={{ display: "flex", gap: "1.025rem" }}>
-          {pages.map((page) => (
-            <NavLink
-              key={page.id}
-              to={page.path}
-              style={({ isActive }) => ({
-                color: isActive ? "#eeeeee" : theme.palette.primary,
-              })}
-            >
-              {page.title}
-            </NavLink>
-          ))}
-        </Box>
+      <Grid size={10}>
+        <Logo
+          style={{
+            width: "2rem",
+            height: "2rem",
+            fill: theme.palette.primary.main,
+            stroke: theme.palette.primary.main,
+          }}
+        />
       </Grid>
-    </Box>
+      <Grid size={2} sx={{ display: "flex", gap: "1.025rem" }}>
+        {pages.map((page) => (
+          <NavLink
+            key={page.id}
+            to={page.path}
+            style={({ isActive }) => ({
+              color: isActive ? "#eeeeee" : theme.palette.primary,
+            })}
+          >
+            {page.title}
+          </NavLink>
+        ))}
+      </Grid>
+    </Grid>
   );
 };
 
