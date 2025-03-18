@@ -1,7 +1,5 @@
 import React, { useEffect, lazy, Suspense, useContext } from "react";
 import { Routes, Route, useLocation } from "react-router-dom";
-import { ThemeContext } from "./ThemeContext.js";
-import { useTheme } from "@mui/material/styles";
 
 function loadRemoteEntry(remoteTitle, remoteUrl) {
   return new Promise((resolve, reject) => {
@@ -34,8 +32,6 @@ function useRemoteLoader(remoteTitle, remoteUrl, pathPrefix) {
 
 const RemoteRoute = ({ remote, remotesList }) => {
   const port = remotesList.find((r) => r.name === remote.title).port;
-  const theme = useTheme();
-  console.log(theme);
   useRemoteLoader(
     remote.title,
     `http://localhost:${port}/remoteEntry.js`,

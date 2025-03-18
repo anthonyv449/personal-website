@@ -76,8 +76,6 @@ const Carousel = ({ autoPlay = true, interval = 5000, children }) => {
 // Home component that fetches image data and uses the custom Carousel
 const Home = () => {
   const [items, setItems] = useState([]);
-  const theme = useTheme();
-  console.log(theme);
 
   useEffect(() => {
     fetch("/GradImages/images.json")

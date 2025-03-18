@@ -6,7 +6,6 @@ import { Grid2 as Grid } from "@mui/material";
 
 const Navbar = ({ pages }) => {
   const theme = useTheme();
-  console.log(theme);
   return (
     <Grid
       container
