@@ -3,6 +3,7 @@ import { createTheme } from "@mui/material/styles";
 // Define the MUI theme
 const customColors = {
   mainTextColor: "#b4b4b4",
+  mainBackgroundColor: "#111210",
 };
 
 const theme = createTheme({
@@ -10,11 +11,8 @@ const theme = createTheme({
     primary: {
       main: customColors.mainTextColor,
     },
-    secondary: {
-      main: "#d32f2f", // Red color
-    },
     background: {
-      default: "#111210",
+      default: customColors.mainBackgroundColor,
     },
   },
   typography: {
@@ -26,6 +24,13 @@ const theme = createTheme({
   },
   components: {
     MuiLink: {
+      styleOverrides: {
+        root: {
+          color: customColors.mainTextColor,
+        },
+      },
+    },
+    MuiIconButton: {
       styleOverrides: {
         root: {
           color: customColors.mainTextColor,

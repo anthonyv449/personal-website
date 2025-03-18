@@ -28,9 +28,7 @@ const App = () => {
       {" "}
       {/* Provide theme via context */}
       <ThemeProvider theme={theme}>
-        {" "}
-        {/* Apply MUI ThemeProvider */}
-        <CssBaseline /> {/* Normalize styles */}
+        <CssBaseline />
         <Router>
           <Navbar pages={content.pages} />
           <AppRoutes content={content} remotes={remotes} />

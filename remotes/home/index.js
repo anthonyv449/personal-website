@@ -108,7 +108,7 @@ const Home = () => {
     <Box my={4}>
       <Carousel autoPlay interval={5000}>
         {items.map((item, index) => (
-          <Paper key={index} elevation={3} sx={{ height: "100%" }}>
+          <Paper key={index} sx={{ height: "100%", backgroundColor: "unset" }}>
             <img
               src={item.image}
               alt={item.alt}
