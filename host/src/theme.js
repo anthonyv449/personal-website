@@ -1,6 +1,5 @@
 import { createTheme } from "@mui/material/styles";
 
-// Define the MUI theme
 const customColors = {
   mainTextColor: "#b4b4b4",
   mainBackgroundColor: "#111210",
@@ -34,6 +33,15 @@ const theme = createTheme({
       styleOverrides: {
         root: {
           color: customColors.mainTextColor,
+        },
+      },
+    },
+    MuiGrid2: {
+      styleOverrides: {
+        root: {
+          "&.main-container": {
+            height: "100vh",
+          },
         },
       },
     },

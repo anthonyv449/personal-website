@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from "react";
-import { Box, Paper, Grid2 as Grid } from "@mui/material";
+import { Box, Paper, Grid2 as Grid, useTheme } from "@mui/material";
 
 // Custom Carousel component
 const Carousel = ({ autoPlay = true, interval = 5000, children }) => {
@@ -43,7 +43,8 @@ const Carousel = ({ autoPlay = true, interval = 5000, children }) => {
 // Home component that fetches image data and uses the custom Carousel
 const Home = () => {
   const [items, setItems] = useState([]);
-
+  const theme = useTheme();
+  console.log(theme);
   useEffect(() => {
     fetch("/GradImages/images.json")
       .then((response) => {
@@ -72,7 +73,7 @@ const Home = () => {
   }
 
   return (
-    <Box my={4}>
+    <Grid container className="main-container">
       <Carousel autoPlay interval={5000}>
         {items.map((item, index) => (
           <Paper key={index} sx={{ height: "100%", backgroundColor: "unset" }}>
@@ -82,13 +83,13 @@ const Home = () => {
               style={{
                 width: "100%",
                 height: "100%",
-                objectFit: "contain", // or "contain", depending on your preference
+                objectFit: "contain",
               }}
             />
           </Paper>
         ))}
       </Carousel>
-    </Box>
+    </Grid>
   );
 };
 
