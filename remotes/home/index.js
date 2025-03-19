@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from "react";
-import { Box, Paper, IconButton } from "@mui/material";
+import { Box, Paper, IconButton, useTheme } from "@mui/material";
 import { ArrowBackIos, ArrowForwardIos } from "@mui/icons-material";
 
 // Custom Carousel component
@@ -108,7 +108,7 @@ const Home = () => {
     <Box my={4}>
       <Carousel autoPlay interval={5000}>
         {items.map((item, index) => (
-          <Paper key={index} elevation={3} sx={{ height: "100%" }}>
+          <Paper key={index} sx={{ height: "100%", backgroundColor: "unset" }}>
             <img
               src={item.image}
               alt={item.alt}

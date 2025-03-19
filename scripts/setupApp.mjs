@@ -1,3 +1,6 @@
+import { createRequire } from "module";
+const require = createRequire(import.meta.url);
+
 import inquirer from "inquirer";
 import webpack from "webpack";
 import WebpackDevServer from "webpack-dev-server";
@@ -9,6 +12,32 @@ import ModuleFederationPlugin from "webpack/lib/container/ModuleFederationPlugin
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
+
+/**
+ * Helper: Generate a shared config object for all dependencies from the host's package.json.
+ */
+function generateShared(hostDeps) {
+  const shared = {};
+  Object.keys(hostDeps).forEach((pkg) => {
+    shared[pkg] = {
+      singleton: true,
+      eager: true,
+      requiredVersion: hostDeps[pkg],
+    };
+  });
+  return shared;
+}
+
+/**
+ * Helper: Merge host shared configuration with remote dependencies.
+ * Any package that is not defined in the host will be left out from shared,
+ * so the remote will use its own copy.
+ */
+function mergeShared(hostShared, remoteDeps) {
+  // For packages defined in hostShared, use those settings.
+  // Leave out any remote-only packages.
+  return { ...hostShared };
+}
 
 /**
  * Load remotes from a local JSON file (using fs/promises).
@@ -29,6 +58,8 @@ async function loadRemotes() {
  */
 function createHostConfig(remotesMap) {
   console.log("remotesMap", remotesMap);
+  const hostDeps = require("../package.json").dependencies;
+  const shared = generateShared(hostDeps);
   return {
     mode: "development",
     entry: path.join(__dirname, "../host/src/index.js"),
@@ -59,6 +90,15 @@ function createHostConfig(remotesMap) {
           test: /\.css$/,
           use: ["style-loader", "css-loader"],
         },
+        {
+          test: /\.svg$/,
+          issuer: /\.[j]sx?$/, // ensures that only JS/TS files import svg files
+          use: [
+            {
+              loader: "@svgr/webpack",
+            },
+          ],
+        },
       ],
     },
     resolve: {
@@ -71,23 +111,7 @@ function createHostConfig(remotesMap) {
       new ModuleFederationPlugin({
         name: "host",
         remotes: remotesMap,
-        shared: {
-          react: {
-            singleton: true,
-            eager: true,
-            requiredVersion: "^19.0.0",
-            strictVersion: true,
-          },
-          "react-dom": {
-            singleton: true,
-            eager: true,
-            requiredVersion: "^19.0.0",
-            strictVersion: true,
-          },
-          lodash: {
-            requiredVersion: "^4.17.21",
-          },
-        },
+        shared,
       }),
     ],
   };
@@ -96,6 +120,14 @@ function createHostConfig(remotesMap) {
 function createRemoteConfig(remote) {
   try {
     console.log("remote", remote);
+    // Assume remote.folder is provided in the remotes.json file to locate its package.json.
+    const remoteDeps = require(`../${remote.folder}/package.json`).dependencies;
+    // Get the host's shared configuration to be used in remotes.
+    const hostDeps = require("../package.json").dependencies;
+    const hostShared = generateShared(hostDeps);
+    // Merge host shared settings. This will only share the dependencies from the host.
+    const shared = mergeShared(hostShared, remoteDeps);
+
     return {
       mode: "development",
       entry: remote.entry,
@@ -128,6 +160,15 @@ function createRemoteConfig(remote) {
             test: /\.css$/,
             use: ["style-loader", "css-loader"],
           },
+          {
+            test: /\.svg$/,
+            issuer: /\.[j]sx?$/, // ensures that only JS/TS files import svg files
+            use: [
+              {
+                loader: "@svgr/webpack",
+              },
+            ],
+          },
         ],
       },
       resolve: {
@@ -142,24 +183,7 @@ function createRemoteConfig(remote) {
           name: remote.name,
           filename: "remoteEntry.js",
           exposes: remote.exposes,
-          shared: {
-            react: {
-              singleton: true,
-              eager: true,
-              requiredVersion: "^19.0.0",
-              strictVersion: true,
-            },
-            "react-dom": {
-              singleton: true,
-              eager: true,
-              requiredVersion: "^19.0.0",
-              strictVersion: true,
-            },
-            lodash: {
-              requiredVersion: "^4.17.21",
-              singleton: false,
-            },
-          },
+          shared,
         }),
       ],
     };

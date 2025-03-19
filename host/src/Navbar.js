@@ -1,63 +1,51 @@
 import React from "react";
-import {
-  Box,
-  Grid2 as MuiGrid, // Or Grid2, depending on your MUI version
-  Link,
-  Typography,
-  IconButton,
-  TextField,
-  InputAdornment,
-} from "@mui/material";
-import SearchIcon from "@mui/icons-material/Search";
-import { Link as RouterLink } from "react-router-dom";
+import { Box, useTheme } from "@mui/material";
+import { NavLink } from "react-router-dom";
+import Logo from "../assets/logo.svg";
+import { Grid2 as Grid } from "@mui/material";
 
-function NavBar({ pages }) {
+const Navbar = ({ pages }) => {
+  const theme = useTheme();
   return (
-    <Box component="nav">
-      <MuiGrid
-        container
-        alignItems="center"
-        sx={{ borderBottom: "2px solid black", height: "2rem" }}
-      >
-        {/* Left Column */}
-        <MuiGrid size={6}>
-          <Typography variant="h6">valenzuela project</Typography>
-        </MuiGrid>
-
-        {/* Right (Longer) Column */}
-        <MuiGrid container size={4} alignItems="center" justifyContent="center">
-          {/* Use Box for horizontal spacing */}
-          <MuiGrid container alignItems="center" spacing={3}>
-            {pages.map((page) => (
-              <Link
-                key={page.id}
-                component={RouterLink}
-                to={page.path}
-                sx={{ textDecoration: "none" }}
-              >
-                {page.title}
-              </Link>
-            ))}
-          </MuiGrid>
-        </MuiGrid>
-        <MuiGrid size={2}>
-          <TextField
-            variant="standard"
-            placeholder="Search..."
-            slotProps={{
-              input: {
-                endAdornment: (
-                  <InputAdornment position="start">
-                    <SearchIcon />
-                  </InputAdornment>
-                ),
-              },
-            }}
-          />
-        </MuiGrid>
-      </MuiGrid>
-    </Box>
+    <Grid
+      container
+      spacing={3}
+      direction="row"
+      p="0 1.025rem"
+      alignItems="center"
+      borderBottom={`0.025rem solid ${theme.palette.primary.main}`}
+    >
+      <Grid size={10}>
+        <Logo
+          style={{
+            width: "2rem",
+            height: "2rem",
+            fill: theme.palette.primary.main,
+            stroke: theme.palette.primary.main,
+          }}
+        />
+      </Grid>
+      <Grid size={2} sx={{ display: "flex", gap: "1.025rem" }}>
+        {pages.map((page) => (
+          <NavLink
+            key={page.id}
+            to={page.path}
+            style={({ isActive }) => ({
+              color: isActive ? "#eeeeee" : theme.palette.primary.main,
+              background: isActive
+                ? "#222222"
+                : theme.palette.background.default,
+              borderRadius: "0.4rem",
+              padding: ".125rem .5rem",
+              textDecoration: "none",
+            })}
+          >
+            {page.title}
+          </NavLink>
+        ))}
+      </Grid>
+    </Grid>
   );
-}
+};
 
-export default NavBar;
+export default Navbar;
