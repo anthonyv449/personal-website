@@ -14,14 +14,22 @@ const theme = createTheme({
       default: customColors.mainBackgroundColor,
     },
   },
-  typography: {
-    h6: {
-      color: customColors.mainTextColor,
-      fontWeight: 600,
-      fontSize: "1.25rem",
-    },
-  },
   components: {
+    MuiTypography: {
+      styleOverrides: {
+        root: {
+          color: customColors.mainTextColor,
+          "&.header": {
+            fontWeight: 600,
+            fontSize: 18,
+          },
+          "&.paragraph": {
+            fontWeight: 300,
+            fontSize: 14,
+          },
+        },
+      },
+    },
     MuiLink: {
       styleOverrides: {
         root: {
@@ -40,7 +48,8 @@ const theme = createTheme({
       styleOverrides: {
         root: {
           "&.main-container": {
-            height: "100vh",
+            height: "100%",
+            alignItems: "flex-start",
           },
         },
       },
