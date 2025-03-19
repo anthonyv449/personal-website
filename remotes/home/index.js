@@ -1,6 +1,5 @@
 import React, { useState, useEffect, useCallback } from "react";
-import { Box, Paper, IconButton, useTheme } from "@mui/material";
-import { ArrowBackIos, ArrowForwardIos } from "@mui/icons-material";
+import { Box, Paper, Grid2 as Grid } from "@mui/material";
 
 // Custom Carousel component
 const Carousel = ({ autoPlay = true, interval = 5000, children }) => {
@@ -24,52 +23,20 @@ const Carousel = ({ autoPlay = true, interval = 5000, children }) => {
   }, [autoPlay, interval, nextSlide, activeIndex]);
 
   return (
-    <Box
-      position="relative"
-      width="100%"
-      overflow="hidden"
-      sx={{ height: "40rem" }}
-    >
+    <Grid>
       {children.map((child, index) => (
-        <Box
+        <Grid
           key={index}
           position="absolute"
-          top={0}
           left={index === activeIndex ? 0 : "100%"}
-          width="100%"
-          height="100%"
+          width="25%"
+          height="25%"
           sx={{ transition: "left 0.5s ease-in-out" }}
         >
           {child}
-        </Box>
+        </Grid>
       ))}
-      <IconButton
-        onClick={prevSlide}
-        sx={{
-          position: "absolute",
-          top: "50%",
-          left: 10,
-          transform: "translateY(-50%)",
-          zIndex: 1,
-        }}
-        aria-label="previous slide"
-      >
-        <ArrowBackIos />
-      </IconButton>
-      <IconButton
-        onClick={nextSlide}
-        sx={{
-          position: "absolute",
-          top: "50%",
-          right: 10,
-          transform: "translateY(-50%)",
-          zIndex: 1,
-        }}
-        aria-label="next slide"
-      >
-        <ArrowForwardIos />
-      </IconButton>
-    </Box>
+    </Grid>
   );
 };
 
