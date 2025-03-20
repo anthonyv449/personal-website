@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from "react";
-import { Box, useTheme } from "@mui/material";
+import { Box } from "@mui/material";
 
 // Custom Carousel component
 export const Carousel = ({ autoPlay = true, interval = 5000, children }) => {

@@ -1,5 +1,5 @@
-import React, { useState, useEffect, useCallback } from "react";
-import { Box, Grid2 as Grid, Typography } from "@mui/material";
+import React, { useState, useEffect } from "react";
+import { Box, Grid2 as Grid, Typography, Paper } from "@mui/material";
 import { Carousel } from "./components/Carousel";
 
 // Home component that fetches image data and uses the custom Carousel
@@ -44,10 +44,10 @@ const Home = () => {
           </Typography>
         </Box>
       </Grid>
-      <Grid xs={6}>
+      <Grid xs={6} minHeight="10rem" minWidth="10rem" overflow="hidden">
         <Carousel autoPlay interval={5000}>
           {items.map((item, index) => (
-            <Box key={index} sx={{ height: "100%", backgroundColor: "unset" }}>
+            <Box key={index}>
               <img
                 src={item.image}
                 alt={item.alt}
