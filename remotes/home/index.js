@@ -33,7 +33,11 @@ const Home = () => {
   }
 
   return (
-    <Grid container spacing={2} direction="row">
+    <Grid
+      container
+      spacing={2}
+      sx={{ marginRight: "10rem", marginLeft: "10rem", alignItems: "center" }}
+    >
       <Grid xs={6}>
         <Box>
           <Typography className="header">Anthony Omar Valenzuela</Typography>
@@ -44,7 +48,13 @@ const Home = () => {
           </Typography>
         </Box>
       </Grid>
-      <Grid xs={6} minHeight="10rem" minWidth="10rem" overflow="hidden">
+      <Grid
+        xs={6}
+        minHeight="10rem"
+        minWidth="10rem"
+        overflow="hidden"
+        marginBottom="1rem"
+      >
         <Carousel autoPlay interval={5000}>
           {items.map((item, index) => (
             <Box key={index}>
