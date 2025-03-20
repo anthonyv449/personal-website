@@ -1,7 +1,15 @@
 import React from "react";
-import { Grid2 as Grid } from "@mui/material";
+import { Grid2 as Grid, Box, Typography } from "@mui/material";
 import { MeSection } from "./components/MeSection";
+import { Divider } from "./components/Divider";
 const Home = () => {
+  const renderWithDividers = (...components) => {
+    return components.flatMap((component, index) =>
+      index === components.length - 1
+        ? [component]
+        : [component, <Divider key={`divider-${index}`} />]
+    );
+  };
   return (
     <Grid
       container
@@ -12,7 +20,7 @@ const Home = () => {
         marginLeft: "10rem",
       }}
     >
-      <MeSection></MeSection>
+      {renderWithDividers(<MeSection></MeSection>, <Typography>hi</Typography>)}
     </Grid>
   );
 };

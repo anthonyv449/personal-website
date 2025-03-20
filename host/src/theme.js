@@ -3,6 +3,7 @@ import { createTheme } from "@mui/material/styles";
 const customColors = {
   mainTextColor: "#b4b4b4",
   mainBackgroundColor: "#111210",
+  grayColor: "#222222",
 };
 
 const theme = createTheme({
@@ -12,6 +13,9 @@ const theme = createTheme({
     },
     background: {
       default: customColors.mainBackgroundColor,
+    },
+    greys: {
+      default: customColors.grayColor,
     },
   },
   components: {
