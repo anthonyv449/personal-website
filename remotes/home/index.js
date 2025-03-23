@@ -7,11 +7,12 @@ import { useImageStore } from "./stores/useImageStore"; // adjust path as needed
 
 export const loader = async () => {
   const { loadArticleImages } = useImageStore.getState();
-  await loadArticleImages();
+  return await loadArticleImages();
 };
 
 const Home = () => {
   const { articleImages } = useImageStore();
+  console.log(articleImages);
 
   // Helper: Takes an array and returns a new array interspersed with dividers.
   const intersperseWithDivider = (components) => {

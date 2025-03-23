@@ -31,7 +31,13 @@ if (fs.existsSync(remotePath)) {
 fs.mkdirSync(remotePath);
 
 // Create index.js with function export
-const indexContent = `function ${capitalizedName}() {
+const indexContent = `import React from 'react';
+
+export const loader = async () => {
+  //add in API calls here from store
+};
+
+function ${capitalizedName}() {
   return "Hello from ${capitalizedName}";
 }
 
