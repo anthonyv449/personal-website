@@ -46,7 +46,7 @@ const theme = createTheme({
           boxShadow: `0.125rem 0.125rem 0.0625rem 0.0625rem ${customColors.grayColor}, 0.125rem 0.1875rem 0.0625rem 0.0625rem ${customColors.secondGray}, 0.5625rem 0.875rem 1.125rem rgba(0, 0, 0, 0.062)`,
           transform: "translateY(-0.625rem)",
           "&:hover": {
-            transform: " rotate(-0.5deg) translateY(-1.25rem)",
+            transform: " rotate(-0.5deg) translateY(-1rem)",
             boxShadow: `0.125rem 0.125rem 0.3125rem 0.125rem ${customColors.grayColor}, 0.125rem 0.1875rem 0.3125rem 0.125rem ${customColors.secondGray}, 0.5625rem 0.875rem 1.125rem rgba(0, 0, 0, 0.062)`,
             zIndex: 1,
           },
