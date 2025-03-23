@@ -4,6 +4,7 @@ import { ThemeProvider, CssBaseline, Box, Grid2 as Grid } from "@mui/material";
 import Navbar from "./Navbar.js";
 import AppRoutes from "./AppRoutes.js";
 import theme from "./theme.js";
+import Footer from "./Footer"; // Add this import
 import { ThemeContext } from "./ThemeContext.js";
 
 const App = () => {
@@ -42,7 +43,7 @@ const App = () => {
               <AppRoutes content={content} remotes={remotes} />
             </Grid>
             <Grid component="footer" size="auto">
-              <Box>Footer Content</Box>
+              <Footer />
             </Grid>
           </Grid>
         </Router>
