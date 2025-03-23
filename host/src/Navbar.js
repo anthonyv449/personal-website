@@ -1,8 +1,7 @@
 import React from "react";
-import { Box, useTheme } from "@mui/material";
+import { Box, useTheme, Grid2 as Grid } from "@mui/material";
 import { NavLink } from "react-router-dom";
 import Logo from "../assets/logo.svg";
-import { Grid2 as Grid } from "@mui/material";
 
 const Navbar = ({ pages }) => {
   const theme = useTheme();

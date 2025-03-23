@@ -1,4 +1,4 @@
-import React, { useEffect, lazy, Suspense, useContext } from "react";
+import React, { useEffect, lazy, Suspense } from "react";
 import { Routes, Route, useLocation } from "react-router-dom";
 
 function loadRemoteEntry(remoteTitle, remoteUrl) {
@@ -46,12 +46,28 @@ const RemoteRoute = ({ remote, remotesList }) => {
     await __webpack_init_sharing__("default");
 
     const container = window[remote.title];
-    if (!container)
+    if (!container) {
       throw new Error(`Container ${remote.title} not found on window.`);
+    }
 
     await container.init(__webpack_share_scopes__.default);
     const factory = await container.get(remote.exposedModule);
-    return factory();
+    const Module = factory();
+
+    // Run the loader() if it's defined in the remote module
+    if (typeof Module.loader === "function") {
+      console.log("call loader");
+      await Module.loader();
+    }
+
+    // Allow React.lazy to return the default component
+    const Component = Module.default || Module;
+    if (!Component) {
+      throw new Error(`Remote module did not return a valid React component.`);
+    }
+
+    // React.lazy expects an object with a default export.
+    return { default: Component };
   });
 
   return (

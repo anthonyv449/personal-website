@@ -1,127 +1,55 @@
-import React, { useState, useEffect, useCallback } from "react";
-import { Box, Paper, IconButton, useTheme } from "@mui/material";
-import { ArrowBackIos, ArrowForwardIos } from "@mui/icons-material";
+import React from "react";
+import { Grid2 as Grid, Box } from "@mui/material";
+import { MeSection } from "./components/MeSection";
+import { Divider } from "./components/Divider";
+import { CustomCard } from "./components/Card";
+import { useImageStore } from "./stores/useImageStore"; // adjust path as needed
 
-// Custom Carousel component
-const Carousel = ({ autoPlay = true, interval = 5000, children }) => {
-  const [activeIndex, setActiveIndex] = useState(0);
-  const count = children.length;
-
-  const nextSlide = useCallback(() => {
-    setActiveIndex((prevIndex) => (prevIndex + 1) % count);
-  }, [count]);
-
-  const prevSlide = useCallback(() => {
-    setActiveIndex((prevIndex) => (prevIndex - 1 + count) % count);
-  }, [count]);
-
-  useEffect(() => {
-    if (!autoPlay) return;
-    const timer = setInterval(() => {
-      nextSlide();
-    }, interval);
-    return () => clearInterval(timer);
-  }, [autoPlay, interval, nextSlide, activeIndex]);
-
-  return (
-    <Box
-      position="relative"
-      width="100%"
-      overflow="hidden"
-      sx={{ height: "40rem" }}
-    >
-      {children.map((child, index) => (
-        <Box
-          key={index}
-          position="absolute"
-          top={0}
-          left={index === activeIndex ? 0 : "100%"}
-          width="100%"
-          height="100%"
-          sx={{ transition: "left 0.5s ease-in-out" }}
-        >
-          {child}
-        </Box>
-      ))}
-      <IconButton
-        onClick={prevSlide}
-        sx={{
-          position: "absolute",
-          top: "50%",
-          left: 10,
-          transform: "translateY(-50%)",
-          zIndex: 1,
-        }}
-        aria-label="previous slide"
-      >
-        <ArrowBackIos />
-      </IconButton>
-      <IconButton
-        onClick={nextSlide}
-        sx={{
-          position: "absolute",
-          top: "50%",
-          right: 10,
-          transform: "translateY(-50%)",
-          zIndex: 1,
-        }}
-        aria-label="next slide"
-      >
-        <ArrowForwardIos />
-      </IconButton>
-    </Box>
-  );
+export const loader = async () => {
+  const { loadArticleImages } = useImageStore.getState();
+  await loadArticleImages();
 };
 
-// Home component that fetches image data and uses the custom Carousel
 const Home = () => {
-  const [items, setItems] = useState([]);
+  const { articleImages } = useImageStore();
 
-  useEffect(() => {
-    fetch("/GradImages/images.json")
-      .then((response) => {
-        if (!response.ok) {
-          throw new Error("Failed to fetch image data");
-        }
-        return response.json();
-      })
-      .then((data) => {
-        // Adjust image path if needed
-        const adjustedData = data.map((item) => ({
-          ...item,
-          image: item.image.startsWith("/")
-            ? item.image
-            : `/GradImages/${item.image}`,
-        }));
-        setItems(adjustedData);
-      })
-      .catch((error) => {
-        console.error("Error loading images:", error);
-      });
-  }, []);
+  // Helper: Takes an array and returns a new array interspersed with dividers.
+  const intersperseWithDivider = (components) => {
+    return components.reduce((acc, component, index) => {
+      if (index > 0) {
+        acc.push(<Divider key={`divider-${index}`} />);
+      }
+      acc.push(<Box key={`component-${index}`}>{component}</Box>);
+      return acc;
+    }, []);
+  };
 
-  if (items.length === 0) {
-    return <Box>Loading images...</Box>;
-  }
+  const meSectionComponent = <MeSection />;
+  // Map articleImages to CustomCard components
+  const cardComponents = articleImages.map((image, index) => (
+    <CustomCard
+      key={index}
+      imgSrc={image.image}
+      title={image.title}
+      description={image.description}
+    />
+  ));
+
+  // Combine MeSection and all card components into a single array
+  const componentsArray = [meSectionComponent, ...cardComponents];
 
   return (
-    <Box my={4}>
-      <Carousel autoPlay interval={5000}>
-        {items.map((item, index) => (
-          <Paper key={index} sx={{ height: "100%", backgroundColor: "unset" }}>
-            <img
-              src={item.image}
-              alt={item.alt}
-              style={{
-                width: "100%",
-                height: "100%",
-                objectFit: "contain", // or "contain", depending on your preference
-              }}
-            />
-          </Paper>
-        ))}
-      </Carousel>
-    </Box>
+    <Grid
+      container
+      spacing={2}
+      direction="column"
+      sx={{
+        marginRight: "10rem",
+        marginLeft: "10rem",
+      }}
+    >
+      {intersperseWithDivider(componentsArray)}
+    </Grid>
   );
 };
 

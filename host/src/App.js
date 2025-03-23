@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from "react";
 import { BrowserRouter as Router } from "react-router-dom";
-import { ThemeProvider, CssBaseline } from "@mui/material";
+import { ThemeProvider, CssBaseline, Box, Grid2 as Grid } from "@mui/material";
 import Navbar from "./Navbar.js";
 import AppRoutes from "./AppRoutes.js";
 import theme from "./theme.js";
+import Footer from "./Footer"; // Add this import
 import { ThemeContext } from "./ThemeContext.js";
 
 const App = () => {
@@ -29,8 +30,22 @@ const App = () => {
       <ThemeProvider theme={theme}>
         <CssBaseline />
         <Router>
-          <Navbar pages={content.pages} />
-          <AppRoutes content={content} remotes={remotes} />
+          <Grid
+            container
+            direction="column"
+            component="div"
+            sx={{ minHeight: "100vh" }}
+          >
+            <Grid component="header" size="auto">
+              <Navbar pages={content.pages} />
+            </Grid>
+            <Grid component="main" size="grow">
+              <AppRoutes content={content} remotes={remotes} />
+            </Grid>
+            <Grid component="footer" size="auto">
+              <Footer />
+            </Grid>
+          </Grid>
         </Router>
       </ThemeProvider>
     </ThemeContext.Provider>
