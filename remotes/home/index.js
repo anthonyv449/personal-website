@@ -12,7 +12,6 @@ export const loader = async () => {
 
 const Home = () => {
   const { articleImages } = useImageStore();
-  console.log(articleImages);
 
   // Helper: Takes an array and returns a new array interspersed with dividers.
   const intersperseWithDivider = (components) => {

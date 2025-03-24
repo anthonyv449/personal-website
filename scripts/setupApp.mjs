@@ -23,6 +23,7 @@ function generateShared(hostDeps) {
       singleton: true,
       eager: true,
       requiredVersion: hostDeps[pkg],
+      strictVersion: true,
     };
   });
   return shared;
@@ -69,6 +70,9 @@ function createHostConfig(remotesMap) {
       open: true,
       hot: true,
       historyApiFallback: true,
+      headers: {
+        "Cache-Control": "no-store",
+      },
     },
     output: {
       filename: "bundle.js",

@@ -43,52 +43,63 @@ const RemoteRoute = ({ remote, remotesList }) => {
   );
 
   const RemoteWrapper = () => {
-    const [Component, setComponent] = useState(null);
-    const [loaderComplete, setLoaderComplete] = useState(false);
+    const [LazyComponent, setLazyComponent] = useState(null);
 
     useEffect(() => {
+      let isMounted = true;
+
       (async () => {
-        await loadRemoteEntry(
-          remote.title,
-          `http://localhost:${port}/remoteEntry.js`
-        );
+        try {
+          await loadRemoteEntry(
+            remote.title,
+            `http://localhost:${port}/remoteEntry.js`
+          );
 
-        await __webpack_init_sharing__("default");
+          await __webpack_init_sharing__("default");
 
-        const container = window[remote.title];
-        if (!container) {
-          throw new Error(`Container ${remote.title} not found on window.`);
+          const container = window[remote.title];
+          if (!container)
+            throw new Error(`Container ${remote.title} not found`);
+
+          if (!initializedContainers.has(remote.title)) {
+            await container.init(__webpack_share_scopes__.default);
+            initializedContainers.add(remote.title);
+          }
+
+          const factory = await container.get(remote.exposedModule);
+          const Module = factory();
+
+          if (
+            typeof Module.loader === "function" &&
+            !executedLoaders.has(remote.path)
+          ) {
+            console.log("Running loader for:", remote.path);
+            await Module.loader();
+            executedLoaders.add(remote.path);
+          }
+
+          const Component = Module.default || Module;
+
+          // ✅ Set up the lazy component *only after everything is loaded and safe*
+          if (isMounted) {
+            const LazyLoaded = lazy(() =>
+              Promise.resolve({ default: Component })
+            );
+            setLazyComponent(() => LazyLoaded);
+          }
+        } catch (err) {
+          console.error("Error loading remote module:", err);
         }
-
-        if (!initializedContainers.has(remote.title)) {
-          await container.init(__webpack_share_scopes__.default);
-          initializedContainers.add(remote.title);
-        }
-
-        const factory = await container.get(remote.exposedModule);
-        const Module = factory();
-
-        if (
-          typeof Module.loader === "function" &&
-          !executedLoaders.has(remote.path)
-        ) {
-          console.log("Running loader for:", remote.path);
-          await Module.loader();
-          executedLoaders.add(remote.path);
-          console.log("Finished running loader");
-        }
-
-        const LoadedComponent = Module.default || Module;
-        setComponent(() => LoadedComponent);
-        setLoaderComplete(true);
       })();
+
+      return () => {
+        isMounted = false;
+      };
     }, []);
 
-    if (!loaderComplete || !Component) {
-      return <div>Loading data...</div>;
+    if (!LazyComponent) {
+      return <div>Loading remote component...</div>;
     }
-
-    const LazyComponent = lazy(() => Promise.resolve({ default: Component }));
 
     return (
       <Suspense fallback={<div>Loading remote component...</div>}>

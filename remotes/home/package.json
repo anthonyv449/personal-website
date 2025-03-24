@@ -6,17 +6,11 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "babel": {
-    "presets": [
       [
         "@babel/preset-react",
         {
           "runtime": "automatic"
         }
-      ],
-      "@babel/preset-env"
-    ]
-  },
   "keywords": [],
   "author": "",
   "license": "ISC"
