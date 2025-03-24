@@ -36,6 +36,13 @@ const theme = createTheme({
         },
       },
     },
+    MuiListItem: {
+      styleOverrides: {
+        root: {
+          color: customColors.mainTextColor,
+        },
+      },
+    },
     MuiCard: {
       styleOverrides: {
         root: {

@@ -5,6 +5,12 @@
       "title": "Home",
       "path": "/", 
       "exposedModule": "Home"
+    },
+    {
+      "id": "resume",
+      "path": "/resume",
+      "title": "Resume",
+      "exposedModule": "Resume"
     }
     
   ]

@@ -19,6 +19,7 @@ export const useImageStore = create((set) => ({
       }));
 
       set({ articleImages: adjustedData });
+      console.log(adjustedData);
     } catch (error) {
       console.error("Error loading images:", error);
     }

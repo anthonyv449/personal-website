@@ -7,6 +7,15 @@
       "exposes": {
         "Home": "./remotes/home/index.js"
       }
+    },
+    {
+      "name": "Resume",
+      "port": 3002,
+      "folder": "./remotes/resume/",
+      "entry": "./remotes/resume/index.js",
+      "exposes": {
+        "Resume": "./remotes/resume/index.js"
+      }
     }
   ]
   

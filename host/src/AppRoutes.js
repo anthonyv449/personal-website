@@ -1,5 +1,8 @@
-import React, { useEffect, lazy, Suspense } from "react";
+import React, { useEffect, lazy, Suspense, useState } from "react";
 import { Routes, Route, useLocation } from "react-router-dom";
+
+const executedLoaders = new Set(); // Track which routes ran their loader
+const initializedContainers = new Set(); // Track which remotes were initialized
 
 function loadRemoteEntry(remoteTitle, remoteUrl) {
   return new Promise((resolve, reject) => {
@@ -32,49 +35,80 @@ function useRemoteLoader(remoteTitle, remoteUrl, pathPrefix) {
 
 const RemoteRoute = ({ remote, remotesList }) => {
   const port = remotesList.find((r) => r.name === remote.title).port;
+
   useRemoteLoader(
     remote.title,
     `http://localhost:${port}/remoteEntry.js`,
     remote.path
   );
 
-  const RemoteComponent = lazy(async () => {
-    await loadRemoteEntry(
-      remote.title,
-      `http://localhost:${port}/remoteEntry.js`
+  const RemoteWrapper = () => {
+    const [LazyComponent, setLazyComponent] = useState(null);
+
+    useEffect(() => {
+      let isMounted = true;
+
+      (async () => {
+        try {
+          await loadRemoteEntry(
+            remote.title,
+            `http://localhost:${port}/remoteEntry.js`
+          );
+
+          await __webpack_init_sharing__("default");
+
+          const container = window[remote.title];
+          if (!container)
+            throw new Error(`Container ${remote.title} not found`);
+
+          if (!initializedContainers.has(remote.title)) {
+            await container.init(__webpack_share_scopes__.default);
+            initializedContainers.add(remote.title);
+          }
+
+          const factory = await container.get(remote.exposedModule);
+          const Module = factory();
+
+          if (
+            typeof Module.loader === "function" &&
+            !executedLoaders.has(remote.path)
+          ) {
+            console.log("Running loader for:", remote.path);
+            await Module.loader();
+            executedLoaders.add(remote.path);
+          }
+
+          const Component = Module.default || Module;
+
+          // ✅ Set up the lazy component *only after everything is loaded and safe*
+          if (isMounted) {
+            const LazyLoaded = lazy(() =>
+              Promise.resolve({ default: Component })
+            );
+            setLazyComponent(() => LazyLoaded);
+          }
+        } catch (err) {
+          console.error("Error loading remote module:", err);
+        }
+      })();
+
+      return () => {
+        isMounted = false;
+      };
+    }, []);
+
+    if (!LazyComponent) {
+      return <div>Loading remote component...</div>;
+    }
+
+    return (
+      <Suspense fallback={<div>Loading remote component...</div>}>
+        <LazyComponent />
+      </Suspense>
     );
-    await __webpack_init_sharing__("default");
+  };
 
-    const container = window[remote.title];
-    if (!container) {
-      throw new Error(`Container ${remote.title} not found on window.`);
-    }
-
-    await container.init(__webpack_share_scopes__.default);
-    const factory = await container.get(remote.exposedModule);
-    const Module = factory();
-
-    // Run the loader() if it's defined in the remote module
-    if (typeof Module.loader === "function") {
-      console.log("call loader");
-      await Module.loader();
-    }
-
-    // Allow React.lazy to return the default component
-    const Component = Module.default || Module;
-    if (!Component) {
-      throw new Error(`Remote module did not return a valid React component.`);
-    }
-
-    // React.lazy expects an object with a default export.
-    return { default: Component };
-  });
-
-  return (
-    <Suspense fallback={<div>Loading remote component...</div>}>
-      <RemoteComponent />
-    </Suspense>
-  );
+  return <RemoteWrapper />;
 };
 
 const AppRoutes = ({ content, remotes }) => {

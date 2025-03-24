@@ -7,7 +7,7 @@ import { useImageStore } from "./stores/useImageStore"; // adjust path as needed
 
 export const loader = async () => {
   const { loadArticleImages } = useImageStore.getState();
-  await loadArticleImages();
+  return await loadArticleImages();
 };
 
 const Home = () => {
