@@ -70,9 +70,6 @@ function createHostConfig(remotesMap) {
       open: true,
       hot: true,
       historyApiFallback: true,
-      headers: {
-        "Cache-Control": "no-store",
-      },
     },
     output: {
       filename: "bundle.js",
@@ -138,7 +135,6 @@ function createRemoteConfig(remote) {
       devServer: {
         port: remote.port,
         open: false,
-        hot: true,
         headers: {
           "Access-Control-Allow-Origin": "*", // or specify the allowed origin(s)
         },

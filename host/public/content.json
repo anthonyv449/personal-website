@@ -11,6 +11,12 @@
       "path": "/resume",
       "title": "Resume",
       "exposedModule": "Resume"
+    },
+    {
+      "id": "writings",
+      "path": "/writings",
+      "title": "Writings",
+      "exposedModule": "Writings"
     }
     
   ]

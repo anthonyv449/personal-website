@@ -16,6 +16,15 @@
       "exposes": {
         "Resume": "./remotes/resume/index.js"
       }
-    }
+    },
+      {
+        "name": "Writings",
+        "port": 3003,
+        "folder": "./remotes/writings/",
+        "entry": "./remotes/writings/index.js",
+        "exposes": {
+          "Writings": "./remotes/writings/index.js"
+        }
+      }
   ]
   
