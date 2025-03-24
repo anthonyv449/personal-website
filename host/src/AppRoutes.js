@@ -12,7 +12,6 @@ function loadRemoteEntry(remoteTitle, remoteUrl) {
     script.src = remoteUrl;
     script.async = true;
     script.onload = () => {
-      console.log(`Remote ${remoteTitle} loaded from ${remoteUrl}`);
       resolve();
     };
     script.onerror = () => {
@@ -35,12 +34,6 @@ function useRemoteLoader(remoteTitle, remoteUrl, pathPrefix) {
 
 const RemoteRoute = ({ remote, remotesList }) => {
   const port = remotesList.find((r) => r.name === remote.title).port;
-
-  useRemoteLoader(
-    remote.title,
-    `http://localhost:${port}/remoteEntry.js`,
-    remote.path
-  );
 
   const RemoteWrapper = () => {
     const [LazyComponent, setLazyComponent] = useState(null);
@@ -73,9 +66,9 @@ const RemoteRoute = ({ remote, remotesList }) => {
             typeof Module.loader === "function" &&
             !executedLoaders.has(remote.path)
           ) {
-            console.log("Running loader for:", remote.path);
             await Module.loader();
             executedLoaders.add(remote.path);
+            console.log("Finished loader for", remote.path);
           }
 
           const Component = Module.default || Module;
