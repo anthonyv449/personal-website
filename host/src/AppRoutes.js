@@ -1,5 +1,5 @@
 import React, { useEffect, lazy, Suspense, useState } from "react";
-import { Routes, Route, useLocation } from "react-router-dom";
+import { Routes, Route } from "react-router-dom";
 
 const executedLoaders = new Set(); // Track which routes ran their loader
 const initializedContainers = new Set(); // Track which remotes were initialized

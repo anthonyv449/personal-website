@@ -144,7 +144,7 @@ function createRemoteConfig(remote) {
     const hostShared = generateShared(hostDeps);
     // Merge host shared settings. This will only share the dependencies from the host.
     const shared = mergeShared(hostShared, remoteDeps);
-    console.log(remote.exposes);
+    console.log(shared);
 
     return {
       mode: "development",
@@ -199,7 +199,7 @@ function createRemoteConfig(remote) {
         new ModuleFederationPlugin({
           name: remote.name,
           filename: "remoteEntry.js",
-          exposes: remote.exposes ?? generateExposeEntries(remote.folder),
+          exposes: remote.exposes,
           shared,
         }),
       ],

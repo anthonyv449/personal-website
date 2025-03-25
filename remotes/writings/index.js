@@ -7,7 +7,6 @@ import {
   CardActionArea,
 } from "@mui/material";
 import { useArticleStore } from "./store/useArticleStore";
-
 import { useNavigate } from "react-router-dom";
 
 export const loader = async () => {

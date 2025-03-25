@@ -3,6 +3,7 @@ import { useParams } from "react-router-dom";
 import { useArticleStore } from "./store/useArticleStore";
 import { Box, Typography } from "@mui/material";
 import ReactMarkdown from "react-markdown";
+import { Spinner } from "@anthonyv449/ui-kit";
 
 const Article = () => {
   const { slug } = useParams();
@@ -21,7 +22,7 @@ const Article = () => {
 
   const article = articles.find((a) => a.slug === slug);
 
-  if (!article) return <Typography>Loading article...</Typography>;
+  if (!article) return <Spinner></Spinner>;
 
   return (
     <Box padding={4}>
