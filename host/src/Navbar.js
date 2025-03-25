@@ -8,13 +8,12 @@ const Navbar = ({ pages }) => {
   return (
     <Grid
       container
-      spacing={3}
       direction="row"
-      p="0 1.025rem"
+      p="0 1.025rem 0 0"
       alignItems="center"
       borderBottom={`0.025rem solid ${theme.palette.primary.main}`}
     >
-      <Grid size={10}>
+      <Grid size={9}>
         <Logo
           style={{
             width: "2rem",
@@ -24,7 +23,7 @@ const Navbar = ({ pages }) => {
           }}
         />
       </Grid>
-      <Grid size={2} sx={{ display: "flex", gap: "1.025rem" }}>
+      <Grid size="auto">
         {pages.map((page) => (
           <NavLink
             key={page.id}
