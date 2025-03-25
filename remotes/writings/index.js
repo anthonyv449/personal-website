@@ -11,8 +11,6 @@ import { useNavigate } from "react-router-dom";
 
 export const loader = async () => {
   //add in API calls here from store
-  const { loadArticles } = useArticleStore.getState();
-  return loadArticles();
 };
 
 const Writings = () => {
