@@ -58,7 +58,6 @@ async function loadRemotes() {
  * Create the in-memory Webpack config for the HOST application.
  */
 function createHostConfig(remotesMap) {
-  console.log("remotesMap", remotesMap);
   const hostDeps = require("../package.json").dependencies;
   const shared = generateShared(hostDeps);
   return {
@@ -70,9 +69,6 @@ function createHostConfig(remotesMap) {
       open: true,
       hot: true,
       historyApiFallback: true,
-      headers: {
-        "Cache-Control": "no-store",
-      },
     },
     output: {
       filename: "bundle.js",
@@ -123,7 +119,6 @@ function createHostConfig(remotesMap) {
 
 function createRemoteConfig(remote) {
   try {
-    console.log("remote", remote);
     // Assume remote.folder is provided in the remotes.json file to locate its package.json.
     const remoteDeps = require(`../${remote.folder}/package.json`).dependencies;
     // Get the host's shared configuration to be used in remotes.
@@ -131,6 +126,7 @@ function createRemoteConfig(remote) {
     const hostShared = generateShared(hostDeps);
     // Merge host shared settings. This will only share the dependencies from the host.
     const shared = mergeShared(hostShared, remoteDeps);
+    console.log(remote.exposes);
 
     return {
       mode: "development",
@@ -138,7 +134,6 @@ function createRemoteConfig(remote) {
       devServer: {
         port: remote.port,
         open: false,
-        hot: true,
         headers: {
           "Access-Control-Allow-Origin": "*", // or specify the allowed origin(s)
         },

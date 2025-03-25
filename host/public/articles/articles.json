@@ -1,0 +1,15 @@
+[
+    {
+      "slug": "my-first-post",
+      "title": "My First Post",
+      "summary": "This is my first article.",
+      "file": "/articles/my-first-post.md"
+    },
+    {
+        "slug": "react-hooks-explained",
+        "title": "Understanding React Hooks",
+        "summary": "What are hooks and how do they work?",
+        "file": "/articles/react-hooks-explained.md"
+      }
+  ]
+  
