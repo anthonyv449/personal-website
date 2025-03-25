@@ -1,30 +1,34 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
+import { useArticleStore } from "./store/useArticleStore";
 import { Box, Typography } from "@mui/material";
-
-const articleContent = {
-  "my-first-post": {
-    title: "My First Post",
-    body: "Welcome to my first article...",
-  },
-  "deep-dive-react": {
-    title: "Deep Dive into React",
-    body: "React hooks, context, and more...",
-  },
-};
+import ReactMarkdown from "react-markdown";
 
 const Article = () => {
   const { slug } = useParams();
-  const article = articleContent[slug];
+  const [markdown, setMarkdown] = useState("");
+  const { articles } = useArticleStore();
 
-  if (!article) return <Typography>Article not found.</Typography>;
+  useEffect(() => {
+    const article = articles.find((a) => a.slug === slug);
+    if (article) {
+      fetch(article.file)
+        .then((res) => res.text())
+        .then(setMarkdown)
+        .catch((err) => console.error("Error loading markdown:", err));
+    }
+  }, [slug, articles]);
+
+  const article = articles.find((a) => a.slug === slug);
+
+  if (!article) return <Typography>Loading article...</Typography>;
 
   return (
-    <Box padding={2}>
-      <Typography variant="h4" gutterBottom>
+    <Box padding={4}>
+      <Typography variant="h3" gutterBottom>
         {article.title}
       </Typography>
-      <Typography variant="body1">{article.body}</Typography>
+      <ReactMarkdown>{markdown}</ReactMarkdown>
     </Box>
   );
 };

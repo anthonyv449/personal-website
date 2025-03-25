@@ -6,27 +6,20 @@ import {
   Typography,
   CardActionArea,
 } from "@mui/material";
+import { useArticleStore } from "./store/useArticleStore";
+
 import { useNavigate } from "react-router-dom";
 
 export const loader = async () => {
   //add in API calls here from store
+  const { loadArticles } = useArticleStore.getState();
+  return loadArticles();
 };
-
-const articles = [
-  {
-    slug: "my-first-post",
-    title: "My First Post",
-    summary: "Intro to my blog.",
-  },
-  {
-    slug: "deep-dive-react",
-    title: "Deep Dive into React",
-    summary: "Hooks, context, etc.",
-  },
-];
 
 const Writings = () => {
   const navigate = useNavigate();
+  const { articles } = useArticleStore();
+  console.log(articles);
 
   return (
     <Grid container spacing={2} padding={3}>
