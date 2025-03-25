@@ -71,22 +71,23 @@ const RemoteRoute = ({ remote, remotesList }) => {
           const factory = await container.get(remote.exposedModule);
           const Module = factory();
 
-          if (
-            typeof Module.loader === "function" &&
-            !executedLoaders.has(remote.path)
-          ) {
-            await Module.loader();
-            executedLoaders.add(remote.path);
-            console.log("Finished loader for", remote.path);
-          }
-
-          const Component = Module.default || Module;
-
-          // ✅ Set up the lazy component *only after everything is loaded and safe*
           if (isMounted) {
-            const LazyLoaded = lazy(() =>
-              Promise.resolve({ default: Component })
-            );
+            const LazyLoaded = lazy(async () => {
+              const factory = await container.get(remote.exposedModule);
+              const Module = factory();
+
+              if (
+                typeof Module.loader === "function" &&
+                !executedLoaders.has(remote.path)
+              ) {
+                await Module.loader();
+                executedLoaders.add(remote.path);
+                console.log("Finished loader for", remote.path);
+              }
+
+              return { default: Module.default || Module };
+            });
+
             setLazyComponent(() => LazyLoaded);
           }
         } catch (err) {

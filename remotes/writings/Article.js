@@ -7,27 +7,25 @@ import { Spinner } from "@anthonyv449/ui-kit";
 
 export const loader = async () => {
   //add in API calls here from store
-  const { loadArticles } = useArticleStore.getState();
-  return loadArticles();
+  const articleStore = useArticleStore.getState();
+  const { currentArticle } = articleStore;
+  if (!currentArticle) {
+    const slug = window.location.pathname.split("/").filter(Boolean).pop();
+    await articleStore.loadArticle(slug);
+  }
 };
 const Article = () => {
-  const { slug } = useParams();
   const [markdown, setMarkdown] = useState("");
-  const { articles } = useArticleStore();
+  const { currentArticle } = useArticleStore();
+
+  const article = currentArticle;
+  if (!article) return <Spinner />;
 
   useEffect(() => {
-    const article = articles.find((a) => a.slug === slug);
-    if (article) {
-      fetch(article.file)
-        .then((res) => res.text())
-        .then(setMarkdown)
-        .catch((err) => console.error("Error loading markdown:", err));
+    if (article?.articleText) {
+      setMarkdown(article.articleText);
     }
-  }, [slug, articles]);
-
-  const article = articles.find((a) => a.slug === slug);
-
-  if (!article) return <Spinner></Spinner>;
+  }, [article]);
 
   return (
     <Box padding={4}>
