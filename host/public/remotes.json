@@ -22,8 +22,10 @@
         "port": 3003,
         "folder": "./remotes/writings/",
         "entry": "./remotes/writings/index.js",
+        "children": [{"title":"Article"}],
         "exposes": {
-          "Writings": "./remotes/writings/index.js"
+          "Writings": "./remotes/writings/index.js",
+          "Article":"./remotes/writings/Article.js"
         }
       }
   ]

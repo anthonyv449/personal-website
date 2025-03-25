@@ -16,7 +16,13 @@
       "id": "writings",
       "path": "/writings",
       "title": "Writings",
-      "exposedModule": "Writings"
+      "exposedModule": "Writings", 
+      "children": [{
+        "id": "article",
+        "title": "Writings",
+        "path": "/writings/:slug",
+        "exposedModule": "./Article"
+      }]
     }
     
   ]

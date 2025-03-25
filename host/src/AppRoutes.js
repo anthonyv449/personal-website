@@ -21,19 +21,28 @@ function loadRemoteEntry(remoteTitle, remoteUrl) {
   });
 }
 
-function useRemoteLoader(remoteTitle, remoteUrl, pathPrefix) {
-  const location = useLocation();
-  useEffect(() => {
-    if (location.pathname.startsWith(pathPrefix)) {
-      loadRemoteEntry(remoteTitle, remoteUrl)
-        .then(() => console.log(`Remote ${remoteTitle} is available`))
-        .catch((err) => console.error(err));
+const findRemotePort = (rem, remotesList) => {
+  for (const remote of remotesList) {
+    // Direct match with parent
+    if (remote.name === rem.title) {
+      return remote.port;
     }
-  }, [location, remoteTitle, remoteUrl, pathPrefix]);
-}
+
+    // Check children titles
+    if (Array.isArray(remote.children)) {
+      const childMatch = remote.children.find(
+        (child) => child.title === rem.title
+      );
+      if (childMatch) {
+        return remote.port; // ✅ Return parent's port if child title matches
+      }
+    }
+  }
+  return null; // fallback if not found
+};
 
 const RemoteRoute = ({ remote, remotesList }) => {
-  const port = remotesList.find((r) => r.name === remote.title).port;
+  const port = findRemotePort(remote, remotesList);
 
   const RemoteWrapper = () => {
     const [LazyComponent, setLazyComponent] = useState(null);
@@ -114,6 +123,19 @@ const AppRoutes = ({ content, remotes }) => {
           element={<RemoteRoute remote={page} remotesList={remotes} />}
         />
       ))}
+      {content.pages.map((page) => {
+        if (page.children?.length > 0) {
+          return page.children.map((child) => {
+            return (
+              <Route
+                key={child.id}
+                path={child.path}
+                element={<RemoteRoute remote={child} remotesList={remotes} />}
+              />
+            );
+          });
+        }
+      })}
     </Routes>
   );
 };
