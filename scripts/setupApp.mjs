@@ -13,6 +13,24 @@ import ModuleFederationPlugin from "webpack/lib/container/ModuleFederationPlugin
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
+function generateExposeEntries(folderPath, exposePrefix = "./") {
+  const absolutePath = path.resolve(__dirname, folderPath);
+  const files = fs.readdirSync(absolutePath);
+
+  const exposes = {};
+
+  files.forEach((file) => {
+    const ext = path.extname(file);
+    const base = path.basename(file, ext);
+
+    if (ext === ".js" || ext === ".jsx") {
+      exposes[`${exposePrefix}${base}`] = `${folderPath}/${file}`;
+    }
+  });
+
+  return exposes;
+}
+
 /**
  * Helper: Generate a shared config object for all dependencies from the host's package.json.
  */
@@ -126,7 +144,7 @@ function createRemoteConfig(remote) {
     const hostShared = generateShared(hostDeps);
     // Merge host shared settings. This will only share the dependencies from the host.
     const shared = mergeShared(hostShared, remoteDeps);
-    console.log(remote.exposes);
+    console.log(shared);
 
     return {
       mode: "development",

@@ -4,7 +4,8 @@
   "main": "./host/src/index.js",
   "workspaces": [
     "remotes/*",
-    "host"
+    "host", 
+    "ui-kit"
   ],
   "babel": {
     "presets": [
@@ -28,6 +29,7 @@
   "license": "ISC",
   "description": "",
   "dependencies": {
+    "@anthonyv449/ui-kit": "^1.0.1",
     "@emotion/react": "^11.14.0",
     "@emotion/styled": "^11.14.0",
     "@mui/icons-material": "^6.4.1",

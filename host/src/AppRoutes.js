@@ -1,5 +1,5 @@
 import React, { useEffect, lazy, Suspense, useState } from "react";
-import { Routes, Route, useLocation } from "react-router-dom";
+import { Routes, Route } from "react-router-dom";
 
 const executedLoaders = new Set(); // Track which routes ran their loader
 const initializedContainers = new Set(); // Track which remotes were initialized
@@ -71,22 +71,23 @@ const RemoteRoute = ({ remote, remotesList }) => {
           const factory = await container.get(remote.exposedModule);
           const Module = factory();
 
-          if (
-            typeof Module.loader === "function" &&
-            !executedLoaders.has(remote.path)
-          ) {
-            await Module.loader();
-            executedLoaders.add(remote.path);
-            console.log("Finished loader for", remote.path);
-          }
-
-          const Component = Module.default || Module;
-
-          // ✅ Set up the lazy component *only after everything is loaded and safe*
           if (isMounted) {
-            const LazyLoaded = lazy(() =>
-              Promise.resolve({ default: Component })
-            );
+            const LazyLoaded = lazy(async () => {
+              const factory = await container.get(remote.exposedModule);
+              const Module = factory();
+
+              if (
+                typeof Module.loader === "function" &&
+                !executedLoaders.has(remote.path)
+              ) {
+                await Module.loader();
+                executedLoaders.add(remote.path);
+                console.log("Finished loader for", remote.path);
+              }
+
+              return { default: Module.default || Module };
+            });
+
             setLazyComponent(() => LazyLoaded);
           }
         } catch (err) {
