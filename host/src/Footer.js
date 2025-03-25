@@ -1,9 +1,8 @@
 import React from "react";
-import { Box, Button, Typography, Grid2 as Grid } from "@mui/material";
-import { Link as RouterLink } from "react-router-dom";
+import { Box, Typography, Grid2 as Grid } from "@mui/material";
 
 const Footer = () => {
-  const latestReleaseDate = "March 1, 2025"; // You can dynamically update this later
+  const latestReleaseDate = "March 25, 2025"; // You can dynamically update this later
 
   return (
     <Box
@@ -21,22 +20,6 @@ const Footer = () => {
           <Typography variant="body2">
             Latest Release: {latestReleaseDate}
           </Typography>
-        </Grid>
-        <Grid>
-          <Button
-            component={RouterLink}
-            to="/imprint"
-            sx={{ color: "#b4b4b4", marginRight: 2 }}
-          >
-            Imprint
-          </Button>
-          <Button
-            component={RouterLink}
-            to="/privacypolicy"
-            sx={{ color: "#b4b4b4" }}
-          >
-            Privacy Policy
-          </Button>
         </Grid>
       </Grid>
     </Box>
