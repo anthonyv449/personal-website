@@ -6,6 +6,8 @@ const customColors = {
   grayColor: "#222222",
   secondGray: "#2a2a2a",
   primary: "#81d3ef",
+  hoverText: "#eeeeee",
+  hoverBackground: "#191919",
 };
 
 const theme = createTheme({
@@ -80,6 +82,28 @@ const theme = createTheme({
           "&.main-container": {
             height: "100%",
             alignItems: "flex-start",
+          },
+        },
+      },
+    },
+    MuiButton: {
+      styleOverrides: {
+        root: {
+          color: customColors.mainTextColor,
+          "&:hover": {
+            color: customColors.hoverText,
+            background: customColors.hoverBackground,
+          },
+        },
+      },
+    },
+    MuiLink: {
+      styleOverrides: {
+        root: {
+          color: customColors.mainTextColor,
+          "&:hover": {
+            color: customColors.hoverText,
+            background: customColors.hoverBackground,
           },
         },
       },

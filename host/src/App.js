@@ -6,6 +6,8 @@ import AppRoutes from "./AppRoutes.js";
 import theme from "./theme.js";
 import Footer from "./Footer"; // Add this import
 import { ThemeContext } from "./ThemeContext.js";
+import { MsalProvider } from "@azure/msal-react";
+import { msalInstance } from "./msalConfig"; // adjust path if needed
 
 const App = () => {
   const [content, setContent] = useState(null);
@@ -26,29 +28,31 @@ const App = () => {
   if (!content || !remotes) return <div>Loading...</div>;
 
   return (
-    <ThemeContext.Provider value={theme}>
-      <ThemeProvider theme={theme}>
-        <CssBaseline />
-        <Router>
-          <Grid
-            container
-            direction="column"
-            component="div"
-            sx={{ minHeight: "100vh" }}
-          >
-            <Grid component="header" size="auto">
-              <Navbar pages={content.pages} />
+    <MsalProvider instance={msalInstance}>
+      <ThemeContext.Provider value={theme}>
+        <ThemeProvider theme={theme}>
+          <CssBaseline />
+          <Router>
+            <Grid
+              container
+              direction="column"
+              component="div"
+              sx={{ minHeight: "100vh" }}
+            >
+              <Grid component="header" size="auto">
+                <Navbar pages={content.pages} />
+              </Grid>
+              <Grid component="main" size="grow">
+                <AppRoutes content={content} remotes={remotes} />
+              </Grid>
+              <Grid component="footer" size="auto">
+                <Footer />
+              </Grid>
             </Grid>
-            <Grid component="main" size="grow">
-              <AppRoutes content={content} remotes={remotes} />
-            </Grid>
-            <Grid component="footer" size="auto">
-              <Footer />
-            </Grid>
-          </Grid>
-        </Router>
-      </ThemeProvider>
-    </ThemeContext.Provider>
+          </Router>
+        </ThemeProvider>
+      </ThemeContext.Provider>
+    </MsalProvider>
   );
 };
 
