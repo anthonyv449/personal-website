@@ -4,7 +4,7 @@
   "main": "./host/src/index.js",
   "workspaces": [
     "remotes/*",
-    "host", 
+    "host",
     "ui-kit"
   ],
   "babel": {
@@ -22,7 +22,8 @@
     "start": "webpack serve",
     "build": "webpack --mode production",
     "dev": "node ./scripts/setupApp.mjs",
-    "create-remote": "node ./scripts/create-remote.mjs"
+    "create-remote": "node ./scripts/create-remote.mjs",
+    "build:all": "node scripts/buildAll.mjs"
   },
   "keywords": [],
   "author": "",
