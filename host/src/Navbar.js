@@ -13,10 +13,12 @@ const Navbar = ({ pages }) => {
   const theme = useTheme();
   const { instance, accounts } = useMsal();
 
-  const handleLogin = () => {
-    instance.loginPopup().catch((err) => {
-      console.error("Login failed", err);
-    });
+  const handleLogin = async () => {
+    await instance
+      .loginPopup({ scopes: ["openid", "profile", "email"] })
+      .catch((err) => {
+        console.error("Login failed", err);
+      });
   };
 
   const handleLogout = () => {
@@ -24,6 +26,7 @@ const Navbar = ({ pages }) => {
   };
 
   const user = accounts.length > 0 ? accounts[0] : null;
+  console.log("user: ", user);
 
   return (
     <Grid

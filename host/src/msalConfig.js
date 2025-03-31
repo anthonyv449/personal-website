@@ -1,12 +1,21 @@
 // msalConfig.js
-import { PublicClientApplication } from "@azure/msal-browser";
+import { PublicClientApplication, LogLevel } from "@azure/msal-browser";
 
 export const msalInstance = new PublicClientApplication({
   auth: {
-    clientId: "00000000-0000-0000-0000-000000000000", // dummy GUID
+    clientId: "0cf6163b-47fb-4c0c-ab60-9cfc837f00ca",
     authority:
-      "https://fakedomain.b2clogin.com/fake.onmicrosoft.com/B2C_1_test",
+      "https://papichuloant.b2clogin.com/papichuloant.onmicrosoft.com/B2C_1_signin-signout",
     redirectUri: "http://localhost:3000",
-    knownAuthorities: ["fakedomain.b2clogin.com"],
+    knownAuthorities: ["papichuloant.b2clogin.com"],
+  },
+  system: {
+    loggerOptions: {
+      loggerCallback: (level, message, containsPii) => {
+        if (!containsPii) console.log(`[MSAL] ${message}`);
+      },
+      logLevel: LogLevel.Info,
+      piiLoggingEnabled: false,
+    },
   },
 });
