@@ -1,19 +1,43 @@
 import React from "react";
-import { Box, useTheme, Grid2 as Grid } from "@mui/material";
+import {
+  Button,
+  useTheme,
+  Grid2 as Grid,
+  Link as MuiLink,
+} from "@mui/material";
 import { NavLink } from "react-router-dom";
+import { useMsal } from "@azure/msal-react";
 import Logo from "../assets/logo.svg";
 
 const Navbar = ({ pages }) => {
   const theme = useTheme();
+  const { instance, accounts } = useMsal();
+
+  const handleLogin = async () => {
+    await instance
+      .loginPopup({ scopes: ["openid", "profile", "email"] })
+      .catch((err) => {
+        console.error("Login failed", err);
+      });
+  };
+
+  const handleLogout = () => {
+    instance.logoutPopup();
+  };
+
+  const user = accounts.length > 0 ? accounts[0] : null;
+  console.log("user: ", user);
+
   return (
     <Grid
       container
       direction="row"
       p="0 1.025rem 0 0"
       alignItems="center"
+      justifyContent="space-between"
       borderBottom={`0.025rem solid ${theme.palette.primary.main}`}
     >
-      <Grid size={9}>
+      <Grid item>
         <Logo
           style={{
             width: "2rem",
@@ -25,22 +49,48 @@ const Navbar = ({ pages }) => {
       </Grid>
       <Grid size="auto">
         {pages.map((page) => (
-          <NavLink
+          <MuiLink
             key={page.id}
+            component={NavLink}
             to={page.path}
-            style={({ isActive }) => ({
-              color: isActive ? "#eeeeee" : theme.palette.primary.main,
-              background: isActive
-                ? "#222222"
-                : theme.palette.background.default,
+            sx={{
+              textDecoration: "none",
+              color: theme.palette.primary.main,
+              marginRight: "1rem",
               borderRadius: "0.4rem",
               padding: ".125rem .5rem",
-              textDecoration: "none",
-            })}
+              "&.active": {
+                color: "#eeeeee",
+                backgroundColor: "#222222",
+              },
+            }}
           >
             {page.title}
-          </NavLink>
+          </MuiLink>
         ))}
+        {user ? (
+          <Button
+            onClick={handleLogout}
+            sx={{
+              textTransform: "none",
+              fontSize: "1rem",
+              paddingTop: "0.125rem",
+            }}
+          >
+            Logout ({user.name})
+          </Button>
+        ) : (
+          <Button
+            onClick={handleLogin}
+            sx={{
+              textTransform: "none",
+              fontSize: "1rem",
+              paddingTop: "0.125rem",
+            }}
+          >
+            Sign in with Google
+          </Button>
+        )}
       </Grid>
     </Grid>
   );
