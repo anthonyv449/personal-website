@@ -3,4 +3,3 @@ dist/
 .*
 !/.gitignore
 !.github/
-package-lock.json
