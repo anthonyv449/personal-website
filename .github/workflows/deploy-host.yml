@@ -20,7 +20,7 @@ jobs:
         run: npm ci
 
       - name: Build host
-        run: node scripts/buildAll.mjs
+        run: node scripts/buildHost.mjs
 
       - name: Copy public assets
         run: |

@@ -23,6 +23,7 @@
     "build": "webpack --mode production",
     "dev": "node ./scripts/setupApp.mjs",
     "create-remote": "node ./scripts/create-remote.mjs",
+    "build:host": "node scripts/buildHost.mjs",
     "build:all": "node scripts/buildAll.mjs"
   },
   "keywords": [],
