@@ -1,0 +1,42 @@
+name: Build and Deploy Remotes
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: 18
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build all remotes
+        run: node scripts/buildAll.mjs
+
+      - name: Azure Login
+        uses: azure/login@v1
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+      - name: Upload remotes to Azure Storage
+        uses: azure/CLI@v1
+        with:
+          inlineScript: |
+            for dir in $(ls dist); do
+              if [ "$dir" = "host" ]; then
+                continue
+              fi
+              remote_name=$(echo "$dir" | tr '[:upper:]' '[:lower:]')
+              az storage blob upload-batch --account-name uiremotes -s "dist/$dir" -d "$web/remotes/$remote_name" --overwrite
+            done
+
