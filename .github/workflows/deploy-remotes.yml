@@ -37,6 +37,6 @@ jobs:
                 continue
               fi
               remote_name=$(echo "$dir" | tr '[:upper:]' '[:lower:]')
-              az storage blob upload-batch --account-name uiremotes -s "dist/$dir" -d "$web/remotes/$remote_name" --overwrite
+              az storage blob upload-batch --account-name uiremotes -s "dist/$dir" -d "$web/remotes/$remote_name" --overwrite --auth-mode login
             done
 
