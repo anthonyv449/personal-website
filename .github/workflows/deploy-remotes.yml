@@ -28,6 +28,12 @@ jobs:
         with:
           creds: ${{ secrets.AZURE_CREDENTIALS }}
 
+      - name: Ensure $web container exists
+        uses: azure/CLI@v1
+        with:
+          inlineScript: |
+            az storage container create --account-name uiremotes -n '$web' --auth-mode login
+
       - name: Upload remotes to Azure Storage
         uses: azure/CLI@v1
         with:
@@ -37,5 +43,5 @@ jobs:
                 continue
               fi
               remote_name=$(echo "$dir" | tr '[:upper:]' '[:lower:]')
-              az storage blob upload-batch --account-name uiremotes -s "dist/$dir" -d "$web/remotes/$remote_name" --overwrite --auth-mode login
+              az storage blob upload-batch --account-name uiremotes -s "dist/$dir" -d '$web' --destination-path "remotes/$remote_name" --overwrite --auth-mode login
             done
