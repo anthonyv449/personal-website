@@ -1,6 +1,18 @@
 const path = require("path");
 const HtmlWebpackPlugin = require("html-webpack-plugin");
 const CopyWebpackPlugin = require("copy-webpack-plugin");
+const { ModuleFederationPlugin } = require("webpack").container;
+const deps = require("./package.json").dependencies;
+
+// Build a shared config for all dependencies
+const sharedDeps = Object.entries(deps).reduce((shared, [pkg, version]) => {
+  shared[pkg] = {
+    singleton: true,
+    strictVersion: true,
+    requiredVersion: version,
+  };
+  return shared;
+}, {});
 
 module.exports = {
   entry: "./host/src/index.js",
@@ -29,10 +41,17 @@ module.exports = {
     extensions: [".js", ".jsx"],
   },
   plugins: [
+    // Share all root dependencies as singletons to avoid conflicts
+    new ModuleFederationPlugin({
+      name: "shell",
+      shared: sharedDeps,
+    }),
+
     new HtmlWebpackPlugin({
       template: "./host/public/index.html",
       filename: "index.html",
     }),
+
     new CopyWebpackPlugin({
       patterns: [
         { from: "host/public/content.json", to: "content.json" },
