@@ -3,6 +3,7 @@ import { Routes, Route } from "react-router-dom";
 
 const executedLoaders = new Set(); // Track which routes ran their loader
 const initializedContainers = new Set(); // Track which remotes were initialized
+const isDev = window.location.hostname === "localhost";
 
 function loadRemoteEntry(remoteTitle, remoteUrl) {
   return new Promise((resolve, reject) => {
@@ -51,11 +52,21 @@ const RemoteRoute = ({ remote, remotesList }) => {
       let isMounted = true;
 
       (async () => {
-        try {
-          await loadRemoteEntry(
-            remote.title,
-            `http://localhost:${port}/remoteEntry.js`
-          );
+          try {
+              const remoteConfig = remotesList.find(r =>
+              r.name === remote.title || (r.children || []).some(c => c.title === remote.title)
+            );
+
+          if (!remoteConfig) {
+            throw new Error(`Remote config not found for ${remote.title}`);
+          }
+
+          const remoteUrl = isDev
+            ? `http://localhost:${remote.port}/remoteEntry.js`
+            : remoteConfig.cdnUrl;
+
+          await loadRemoteEntry(remote.title, remoteUrl);
+
 
           await __webpack_init_sharing__("default");
 
