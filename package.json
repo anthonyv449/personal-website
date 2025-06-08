@@ -25,7 +25,8 @@
     "dev": "node ./scripts/setupApp.mjs",
     "create-remote": "node ./scripts/create-remote.mjs",
     "build:host": "node scripts/buildHost.mjs",
-    "build:all": "node scripts/buildAll.mjs"
+    "build:all": "node scripts/buildAll.mjs",
+    "publish:ui-kit": "cd ui-kit && npm publish --access public"
   },
   "keywords": [],
   "author": "",

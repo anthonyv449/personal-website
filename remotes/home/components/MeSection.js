@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from "react";
 import { Box, Grid2 as Grid, Typography } from "@mui/material";
 import { Carousel } from "./Carousel";
+import { withBasePath } from "@anthonyv449/ui-kit";
 export const MeSection = ({}) => {
   const [items, setItems] = useState([]);
   useEffect(() => {
-    fetch("/GradImages/images.json")
+    fetch(withBasePath("/GradImages/images.json"))
       .then((response) => {
         if (!response.ok) {
           throw new Error("Failed to fetch image data");
