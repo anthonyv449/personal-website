@@ -57,7 +57,7 @@ const RemoteRoute = ({ remote, remotesList }) => {
 
           const remoteUrl = isDev
             ? `http://localhost:${port}/remoteEntry.js`
-            : withRemotesPath(`/${remoteConfig.name}/remoteEntry.js`);
+            : withRemotesPath(`/${remoteConfig.name.toLowerCase()}/remoteEntry.js`);
 
           await loadRemoteEntry(remote.title, remoteUrl);
           await __webpack_init_sharing__("default");
