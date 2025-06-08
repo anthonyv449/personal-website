@@ -18,6 +18,15 @@ module.exports = {
           loader: "babel-loader",
         },
       },
+      {
+      test: /\.svg$/i,
+      issuer: /\.[jt]sx?$/,
+      use: ["@svgr/webpack"], // enables import { ReactComponent as Icon } from 'icon.svg'
+    },
+    {
+      test: /\.(png|jpe?g|gif)$/i,
+      type: "asset/resource", // handles other image files
+    },
     ],
   },
   resolve: {
