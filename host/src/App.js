@@ -21,12 +21,12 @@ const App = () => {
 
   useEffect(() => {
     if (!loaded) return;
-    fetch(withBasePath("/content.json"))
+    fetch("/content.json")
       .then((res) => res.json())
       .then((data) => setContent(data))
       .catch((error) => console.log(error));
 
-    fetch(withBasePath("/remotes.json"))
+    fetch("/remotes.json")
       .then((res) => res.json())
       .then((data) => setRemotes(data))
       .catch((error) => console.log(error));
