@@ -12,31 +12,47 @@ import ModuleFederationPlugin from "webpack/lib/container/ModuleFederationPlugin
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
+/**
+ * Generate shared dependencies map, resolving actual installed versions.
+ */
 function generateShared(hostDeps) {
   const shared = {};
-  Object.keys(hostDeps).forEach((pkg) => {
+  for (const pkg of Object.keys(hostDeps)) {
+    let requiredVersion = hostDeps[pkg];
+    // Resolve actual version from node_modules if possible
+    try {
+      const pkgJson = require(`${pkg}/package.json`);
+      requiredVersion = pkgJson.version;
+    } catch (err) {
+      console.warn(`⚠️ Could not resolve version for ${pkg}, using ${hostDeps[pkg]}`);
+    }
     shared[pkg] = {
       singleton: true,
       eager: true,
-      requiredVersion: hostDeps[pkg],
       strictVersion: true,
+      requiredVersion,
     };
-  });
+  }
   return shared;
 }
 
+/**
+ * For remotes, we simply reuse hostShared; can customize if needed.
+ */
 function mergeShared(hostShared, remoteDeps) {
   return { ...hostShared };
 }
 
 async function loadRemotes() {
-  const jsonStr = await fs.readFile(path.resolve(__dirname, "../host/public/remotes.json"), "utf-8");
+  const remotesPath = path.resolve(__dirname, "../host/public/remotes.json");
+  const jsonStr = await fs.readFile(remotesPath, "utf-8");
   return JSON.parse(jsonStr);
 }
 
 function createHostConfig(remotesMap) {
-  const hostDeps = require("../package.json").dependencies;
+  const hostDeps = require(path.resolve(__dirname, "../package.json")).dependencies;
   const shared = generateShared(hostDeps);
+
   return {
     mode: "production",
     entry: path.resolve(__dirname, "../host/src/index.js"),
@@ -69,9 +85,7 @@ function createHostConfig(remotesMap) {
         },
       ],
     },
-    resolve: {
-      extensions: [".js", ".jsx"],
-    },
+    resolve: { extensions: [".js", ".jsx"] },
     plugins: [
       new HtmlWebpackPlugin({
         template: path.resolve(__dirname, "../host/public/index.html"),
@@ -86,8 +100,9 @@ function createHostConfig(remotesMap) {
 }
 
 function createRemoteConfig(remote, hostShared) {
-  const remoteDeps = require(`../${remote.folder}/package.json`).dependencies;
+  const remoteDeps = require(path.resolve(__dirname, `../${remote.folder}/package.json`)).dependencies;
   const shared = mergeShared(hostShared, remoteDeps);
+
   return {
     mode: "production",
     entry: path.resolve(__dirname, `../${remote.entry}`),
@@ -121,9 +136,7 @@ function createRemoteConfig(remote, hostShared) {
         },
       ],
     },
-    resolve: {
-      extensions: [".js", ".jsx"],
-    },
+    resolve: { extensions: [".js", ".jsx"] },
     plugins: [
       new HtmlWebpackPlugin({ title: remote.name }),
       new ModuleFederationPlugin({
@@ -152,7 +165,7 @@ function runWebpack(config, name) {
 
 async function buildAll() {
   const remotes = await loadRemotes();
-  const hostDeps = require("../package.json").dependencies;
+  const hostDeps = require(path.resolve(__dirname, "../package.json")).dependencies;
   const hostShared = generateShared(hostDeps);
 
   for (const remote of remotes) {

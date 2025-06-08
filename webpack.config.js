@@ -2,25 +2,25 @@ const path = require("path");
 const HtmlWebpackPlugin = require("html-webpack-plugin");
 const CopyWebpackPlugin = require("copy-webpack-plugin");
 const { ModuleFederationPlugin } = require("webpack").container;
-const deps = require("./package.json").dependencies;
+const rootDeps = require("./package.json").dependencies;
 
-// Build a shared-deps map with explicit versions (not workspace:* or caret ranges)
-const sharedDeps = Object.entries(deps).reduce((shared, [pkg, reqVersion]) => {
-  let version = reqVersion;
+// Build shared config with actual installed versions for strictVersion
+const sharedDeps = {};
+for (const pkgName of Object.keys(rootDeps)) {
+  let installedVersion = rootDeps[pkgName];
   try {
-    // Attempt to read the installed version from node_modules
-    version = require(path.join(__dirname, "node_modules", pkg, "package.json")).version;
-  } catch (err) {
-    console.warn(`⚠️ could not resolve version for ${pkg}, using requiredVersion ${reqVersion}`);
+    // Read real version from node_modules
+    installedVersion = require(path.join(__dirname, "node_modules", pkgName, "package.json")).version;
+  } catch (e) {
+    console.warn(`Could not resolve installed version for ${pkgName}, using ${rootDeps[pkgName]}`);
   }
-  shared[pkg] = {
+  sharedDeps[pkgName] = {
     singleton: true,
     strictVersion: true,
-    requiredVersion: reqVersion,
-    version,
+    requiredVersion: installedVersion,
+    // no `version` field here; ModuleFederation uses requiredVersion
   };
-  return shared;
-}, {});
+}
 
 module.exports = {
   entry: "./host/src/index.js",
@@ -49,17 +49,14 @@ module.exports = {
     extensions: [".js", ".jsx"],
   },
   plugins: [
-    // Share all root dependencies as singletons with explicit versions
     new ModuleFederationPlugin({
       name: "shell",
       shared: sharedDeps,
     }),
-
     new HtmlWebpackPlugin({
       template: "./host/public/index.html",
       filename: "index.html",
     }),
-
     new CopyWebpackPlugin({
       patterns: [
         { from: "host/public/content.json", to: "content.json" },
