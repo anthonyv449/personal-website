@@ -37,6 +37,7 @@ module.exports = {
       patterns: [
         { from: "host/public/content.json", to: "content.json" },
         { from: "host/public/remotes.json", to: "remotes.json" },
+        { from: "host/public/env.json", to: "env.json" },
       ],
     }),
   ],
