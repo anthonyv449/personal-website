@@ -18,11 +18,15 @@ module.exports = {
         use: "babel-loader",
         exclude: /node_modules/,
       },
+      {
+        test: /\.(png|jpe?g|gif|svg)$/i,
+        type: "asset/resource",
+      },
     ],
   },
   plugins: [
     new HtmlWebpackPlugin({
-      template: "./public/index.html", // make sure this file exists
+      template: "./host/public/index.html", // make sure this file exists
     }),
   ],
   resolve: {
