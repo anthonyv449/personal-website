@@ -31,6 +31,7 @@ function generateShared(hostDeps) {
       eager: true,
       strictVersion: true,
       requiredVersion,
+      version: requiredVersion,
     };
   }
   return shared;
