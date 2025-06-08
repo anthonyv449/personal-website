@@ -8,22 +8,29 @@ import Footer from "./Footer"; // Add this import
 import { ThemeContext } from "./ThemeContext.js";
 import { MsalProvider } from "@azure/msal-react";
 import { msalInstance } from "./msalConfig"; // adjust path if needed
+import { useEnvStore, withBasePath } from "@anthonyv449/ui-kit";
 
 const App = () => {
   const [content, setContent] = useState(null);
   const [remotes, setRemotes] = useState(null);
+  const { loaded, loadEnv } = useEnvStore();
 
   useEffect(() => {
-    fetch("/content.json")
+    loadEnv();
+  }, [loadEnv]);
+
+  useEffect(() => {
+    if (!loaded) return;
+    fetch(withBasePath("/content.json"))
       .then((res) => res.json())
       .then((data) => setContent(data))
       .catch((error) => console.log(error));
 
-    fetch("/remotes.json")
+    fetch(withBasePath("/remotes.json"))
       .then((res) => res.json())
       .then((data) => setRemotes(data))
       .catch((error) => console.log(error));
-  }, []);
+  }, [loaded]);
 
   if (!content || !remotes) return <div>Loading...</div>;
 
