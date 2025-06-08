@@ -1,5 +1,6 @@
 const path = require("path");
 const HtmlWebpackPlugin = require("html-webpack-plugin");
+const CopyWebpackPlugin = require("copy-webpack-plugin");
 
 module.exports = {
   entry: "./host/src/index.js",
@@ -12,30 +13,30 @@ module.exports = {
   module: {
     rules: [
       {
-        test: /\.(js|jsx)$/,         // Handle .js and .jsx files
+        test: /\.(js|jsx)$/,
         exclude: /node_modules/,
-        use: {
-          loader: "babel-loader",
-        },
+        use: "babel-loader",
       },
       {
-      test: /\.svg$/i,
-      issuer: /\.[jt]sx?$/,
-      use: ["@svgr/webpack"], // enables import { ReactComponent as Icon } from 'icon.svg'
-    },
-    {
-      test: /\.(png|jpe?g|gif)$/i,
-      type: "asset/resource", // handles other image files
-    },
+        test: /\.svg$/,
+        issuer: /\.[jt]sx?$/,
+        use: ["@svgr/webpack"],
+      },
     ],
   },
   resolve: {
-    extensions: [".js", ".jsx"],     // Allows importing without extension
+    extensions: [".js", ".jsx"],
   },
   plugins: [
     new HtmlWebpackPlugin({
       template: "./host/public/index.html",
       filename: "index.html",
+    }),
+    new CopyWebpackPlugin({
+      patterns: [
+        { from: "host/public/content.json", to: "content.json" },
+        { from: "host/public/remotes.json", to: "remotes.json" },
+      ],
     }),
   ],
 };
