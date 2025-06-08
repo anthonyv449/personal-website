@@ -67,6 +67,7 @@ module.exports = {
         { from: "host/public/content.json", to: "content.json" },
         { from: "host/public/remotes.json", to: "remotes.json" },
         { from: "host/public/env.json", to: "env.json" },
+        { from: "host/public/favicon.ico", to: "favicon.ico" },
       ],
     }),
   ],

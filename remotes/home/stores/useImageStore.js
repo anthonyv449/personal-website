@@ -16,7 +16,7 @@ export const useImageStore = create((set) => ({
         ...item,
         image: item.image.startsWith("/")
           ? item.image
-          : `/GradImages/${item.image}`,
+          : withHostPath(`/GradImages/${item.image}`),
       }));
 
       set({ articleImages: adjustedData });

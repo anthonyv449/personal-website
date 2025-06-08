@@ -18,7 +18,7 @@ export const MeSection = ({}) => {
           ...item,
           image: item.image.startsWith("/")
             ? item.image
-            : `/GradImages/${item.image}`,
+            : withHostPath(`/GradImages/${item.image}`),
         }));
         setItems(adjustedData);
       })
