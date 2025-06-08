@@ -4,12 +4,20 @@ const CopyWebpackPlugin = require("copy-webpack-plugin");
 const { ModuleFederationPlugin } = require("webpack").container;
 const deps = require("./package.json").dependencies;
 
-// Build a shared config for all dependencies
-const sharedDeps = Object.entries(deps).reduce((shared, [pkg, version]) => {
+// Build a shared-deps map with explicit versions (not workspace:* or caret ranges)
+const sharedDeps = Object.entries(deps).reduce((shared, [pkg, reqVersion]) => {
+  let version = reqVersion;
+  try {
+    // Attempt to read the installed version from node_modules
+    version = require(path.join(__dirname, "node_modules", pkg, "package.json")).version;
+  } catch (err) {
+    console.warn(`⚠️ could not resolve version for ${pkg}, using requiredVersion ${reqVersion}`);
+  }
   shared[pkg] = {
     singleton: true,
     strictVersion: true,
-    requiredVersion: version,
+    requiredVersion: reqVersion,
+    version,
   };
   return shared;
 }, {});
@@ -41,7 +49,7 @@ module.exports = {
     extensions: [".js", ".jsx"],
   },
   plugins: [
-    // Share all root dependencies as singletons to avoid conflicts
+    // Share all root dependencies as singletons with explicit versions
     new ModuleFederationPlugin({
       name: "shell",
       shared: sharedDeps,
