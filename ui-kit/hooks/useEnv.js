@@ -9,7 +9,7 @@ export const useEnvStore = create((set) => ({
   loaded: false,
   loadEnv: async () => {
     try {
-      const res = await fetch("/env.json");
+      const res = await fetch(withBasePath("/env.json"));
       if (!res.ok) throw new Error("Failed to load env.json");
       const data = await res.json();
       set({ basePath: data.basePath || HOST_PATH, loaded: true });
