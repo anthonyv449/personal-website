@@ -18,7 +18,7 @@ for (const pkgName of Object.keys(rootDeps)) {
     singleton: true,
     strictVersion: true,
     requiredVersion: installedVersion,
-    version: requiredVersion,
+    version: installedVersion,
     // no `version` field here; ModuleFederation uses requiredVersion
   };
 }
