@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { BrowserRouter as Router } from "react-router-dom";
-import { ThemeProvider, CssBaseline, Box, Grid2 as Grid } from "@mui/material";
+import { ThemeProvider, CssBaseline, Grid2 as Grid } from "@mui/material";
 import Navbar from "./Navbar.js";
 import AppRoutes from "./AppRoutes.js";
 import theme from "./theme.js";
@@ -8,7 +8,7 @@ import Footer from "./Footer"; // Add this import
 import { ThemeContext } from "./ThemeContext.js";
 import { MsalProvider } from "@azure/msal-react";
 import { msalInstance } from "./msalConfig"; // adjust path if needed
-import { useEnvStore, withBasePath } from "@anthonyv449/ui-kit";
+import { useEnvStore } from "@anthonyv449/ui-kit";
 
 const App = () => {
   const [content, setContent] = useState(null);

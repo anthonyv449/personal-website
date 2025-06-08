@@ -1,12 +1,12 @@
 // src/stores/useImageStore.js
 import { create } from "zustand";
-import { withBasePath } from "@anthonyv449/ui-kit";
+import { withHostPath } from "@anthonyv449/ui-kit";
 
 export const useImageStore = create((set) => ({
   articleImages: [],
   loadArticleImages: async () => {
     try {
-      const response = await fetch(withBasePath("/GradImages/articleImages.json"));
+      const response = await fetch(withHostPath("/GradImages/articleImages.json"));
       if (!response.ok) {
         throw new Error("Failed to fetch image data");
       }
