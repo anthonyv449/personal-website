@@ -1,30 +1,36 @@
+// webpack.config.js (Host Production Build)
 const path = require("path");
 const HtmlWebpackPlugin = require("html-webpack-plugin");
 const CopyWebpackPlugin = require("copy-webpack-plugin");
 const { ModuleFederationPlugin } = require("webpack").container;
 const rootDeps = require("./package.json").dependencies;
 
-// Build shared config with actual installed versions for strictVersion
-const sharedDeps = {};
-for (const pkgName of Object.keys(rootDeps)) {
-  let installedVersion = rootDeps[pkgName];
-  try {
-    // Read real version from node_modules
-    installedVersion = require(path.join(__dirname, "node_modules", pkgName, "package.json")).version;
-  } catch (e) {
-    console.warn(`Could not resolve installed version for ${pkgName}, using ${rootDeps[pkgName]}`);
-  }
-  sharedDeps[pkgName] = {
-    singleton: true,
-    strictVersion: true,
-    requiredVersion: installedVersion,
-    version: installedVersion,
-    // no `version` field here; ModuleFederation uses requiredVersion
-  };
+// Generate a shared-deps map with concrete versions
+function generateShared(deps) {
+  const shared = {};
+  Object.keys(deps).forEach(pkg => {
+    let version;
+    try {
+      version = require(path.join(pkg, "package.json")).version;
+    } catch {
+      // strip leading ^ or ~ if installed version unavailable
+      version = deps[pkg].replace(/^[\^~]/, "");
+    }
+    shared[pkg] = {
+      singleton: true,
+      strictVersion: true,
+      requiredVersion: version,
+      eager: true,
+    };
+  });
+  return shared;
 }
 
+const sharedDeps = generateShared(rootDeps);
+
 module.exports = {
-  entry: "./host/src/index.js",
+  mode: "production",
+  entry: path.resolve(__dirname, "host/src/index.js"),
   output: {
     path: path.resolve(__dirname, "host/dist"),
     filename: "bundle.js",
@@ -35,9 +41,9 @@ module.exports = {
     rules: [
       {
         test: /\.(js|jsx)$/,
-        exclude: /(node_modules|bower_components)/,
-        loader: 'babel-loader',
-        options: { presets: ['@babel/env','@babel/preset-react'] },
+        exclude: /node_modules/,
+        loader: "babel-loader",
+        options: { presets: ["@babel/env", "@babel/preset-react"] },
       },
       {
         test: /\.svg$/,
@@ -46,16 +52,14 @@ module.exports = {
       },
     ],
   },
-  resolve: {
-    extensions: [".js", ".jsx"],
-  },
+  resolve: { extensions: [".js", ".jsx"] },
   plugins: [
     new ModuleFederationPlugin({
       name: "shell",
       shared: sharedDeps,
     }),
     new HtmlWebpackPlugin({
-      template: "./host/public/index.html",
+      template: path.resolve(__dirname, "host/public/index.html"),
       filename: "index.html",
     }),
     new CopyWebpackPlugin({
