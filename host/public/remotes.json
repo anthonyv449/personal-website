@@ -6,7 +6,8 @@
     "entry": "./remotes/home/index.js",
     "exposes": {
       "Home": "./remotes/home/index.js"
-    }
+    },
+    "cdnUrl": "https://learnwithant.com/remotes/home/remoteEntry.js"
   },
   {
     "name": "Resume",
@@ -15,7 +16,8 @@
     "entry": "./remotes/resume/index.js",
     "exposes": {
       "Resume": "./remotes/resume/index.js"
-    }
+    },
+    "cdnUrl": "https://learnwithant.com/remotes/resume/remoteEntry.js"
   },
   {
     "name": "Writings",
@@ -26,7 +28,8 @@
     "exposes": {
       "Writings": "./remotes/writings/index.js",
       "Article": "./remotes/writings/Article.js"
-    }
+    },
+    "cdnUrl": "https://learnwithant.com/remotes/writings/remoteEntry.js"
   }
 
 ]
