@@ -60,9 +60,8 @@ const RemoteRoute = ({ remote, remotesList }) => {
           if (!remoteConfig) {
             throw new Error(`Remote config not found for ${remote.title}`);
           }
-
           const remoteUrl = isDev
-            ? `http://localhost:${remote.port}/remoteEntry.js`
+            ? `http://localhost:${port}/remoteEntry.js`
             : remoteConfig.cdnUrl;
 
           await loadRemoteEntry(remote.title, remoteUrl);
