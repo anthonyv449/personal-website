@@ -9,12 +9,12 @@ export const DEFAULT_DOMAIN =
   NODE_ENV === "production"
     ? `https://cdn.${window.location.hostname}`
     : "";
-
 // ── 2) Zustand store ─────────────────────────────────────────────
 export const useEnvStore = create((set) => ({
   domain: DEFAULT_DOMAIN,
   hostPath: HOST_PATH,
   loaded: false,
+  apiPath: null,
 
   // optional runtime override via /env.json
   loadEnv: async () => {
@@ -26,6 +26,7 @@ export const useEnvStore = create((set) => ({
         domain: data.domain   || DEFAULT_DOMAIN,
         hostPath: data.hostPath || HOST_PATH,
         loaded: true,
+        apiPath: data.apiPath
       });
     } catch (err) {
       console.error("Error loading env.json", err);
