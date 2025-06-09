@@ -40,8 +40,8 @@ const Navbar = ({ pages }) => {
       <Grid item>
         <Logo
           style={{
-            width: "2rem",
-            height: "2rem",
+            width: "5rem",
+            height: "5rem",
             fill: theme.palette.primary.main,
             stroke: theme.palette.primary.main,
           }}
