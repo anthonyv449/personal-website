@@ -21,10 +21,9 @@ function loadRemoteEntry(remoteName, remoteUrl) {
     if (document.querySelector(`script[data-remote=\"${remoteName}\"]`)) {
       return resolve();
     }
-
     const script = document.createElement("script");
     script.src = remoteUrl;
-    script.async = false;                    // ensure insertion/execution order
+    script.async = false;
     script.dataset.remote = remoteName;
     script.onload = () => resolve();
     script.onerror = () => reject(new Error(`Failed to load remote entry: ${remoteUrl}`));
@@ -33,34 +32,25 @@ function loadRemoteEntry(remoteName, remoteUrl) {
 }
 
 async function loadRemoteModule(remoteName, remoteUrl, exposedModule) {
-  // 1) register host share-scope (React, ReactDOM, etc.)
   await ensureShareScope();
-
-  // 2) inject & execute remoteEntry.js
   await loadRemoteEntry(remoteName, remoteUrl);
 
   const container = window[remoteName];
-  if (!container) {
-    throw new Error(`Container ${remoteName} not found on window`);
-  }
+  if (!container) throw new Error(`Container ${remoteName} not found`);
 
-  // 3) initialize container once
   if (!initializedContainers.has(remoteName)) {
     await container.init(__webpack_share_scopes__.default);
     initializedContainers.add(remoteName);
   }
 
-  // 4) fetch the exposed module factory
   const factory = await container.get(exposedModule);
   const Module = factory();
 
-  // 5) run any loader hook once
   if (typeof Module.loader === "function" && !executedLoaders.has(exposedModule)) {
     await Module.loader();
     executedLoaders.add(exposedModule);
   }
 
-  // 6) return the component
   return Module.default || Module;
 }
 
@@ -80,21 +70,23 @@ const RemoteRoute = ({ remote, remotesList }) => {
   const remoteConfig = remotesList.find(
     r => r.name === remote.title || (r.children || []).some(c => c.title === remote.title)
   );
+
   if (!remoteConfig) {
     console.error(`Remote config not found for ${remote.title}`);
     return <div>Error: remote not configured</div>;
   }
 
+  const remoteName = remoteConfig.name;
   const remoteUrl = isDev
     ? `http://localhost:${port}/remoteEntry.js`
-    : withRemotesPath(`/${remoteConfig.name.toLowerCase()}/remoteEntry.js`);
+    : withRemotesPath(`/${remoteName.toLowerCase()}/remoteEntry.js`);
 
   const LazyComponent = useMemo(
     () =>
       lazy(() =>
-        loadRemoteModule(remote.title, remoteUrl, remote.exposedModule).then(comp => ({ default: comp }))
+        loadRemoteModule(remoteName, remoteUrl, remoteConfig.exposedModule).then(comp => ({ default: comp }))
       ),
-    [remote.title, remoteUrl, remote.exposedModule]
+    [remoteName, remoteUrl, remoteConfig.exposedModule]
   );
 
   return (
