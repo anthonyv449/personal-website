@@ -35,7 +35,7 @@ const Navbar = ({ pages }) => {
   };
 
   const handleLogout = async () => {
-      await fetch("/api/auth/logout", {
+      await fetch(`${apiPath}/auth/logout`, {
     method: "POST",
     credentials: "include"
   });
