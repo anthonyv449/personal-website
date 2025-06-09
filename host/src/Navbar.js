@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState, useEffect} from "react";
 import {
   Button,
   useTheme,
@@ -8,25 +8,44 @@ import {
 import { NavLink } from "react-router-dom";
 import { useMsal } from "@azure/msal-react";
 import Logo from "../assets/logo.svg";
+import { useEnvStore } from "@anthonyv449/ui-kit";
 
 const Navbar = ({ pages }) => {
   const theme = useTheme();
   const { instance, accounts } = useMsal();
-
+  const { apiPath } = useEnvStore();
+  const [user, setUser] = useState(null);
+  
   const handleLogin = async () => {
-    await instance
-      .loginPopup({ scopes: ["openid", "profile", "email"] })
-      .catch((err) => {
+     await instance.loginPopup({
+      scopes: ["openid", "profile", "email"]
+    }).then((loginResponse)=>
+    { 
+      var idToken = loginResponse.idToken;
+      fetch(`${apiPath}/auth/microsoft`, {
+        method: "POST",
+        credentials: "include",
+        headers: {"Content-Type":"application/json"},
+        body: JSON.stringify({ idToken })
+      });
+    }
+    ).catch((err) => {
         console.error("Login failed", err);
       });
   };
 
-  const handleLogout = () => {
+  const handleLogout = async () => {
+      await fetch("/api/auth/logout", {
+    method: "POST",
+    credentials: "include"
+  });
     instance.logoutPopup();
   };
 
-  const user = accounts.length > 0 ? accounts[0] : null;
-  console.log("user: ", user);
+  useEffect(()=>{
+    var user = accounts.length > 0 ? accounts[0] : null
+    setUser(user);
+  },[accounts])
 
   return (
     <Grid
