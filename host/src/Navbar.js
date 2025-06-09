@@ -37,7 +37,7 @@ const Navbar = ({ pages }) => {
       justifyContent="space-between"
       borderBottom={`0.025rem solid ${theme.palette.primary.main}`}
     >
-      <Grid item>
+      <Grid>
         <Logo
           style={{
             width: "5rem",
