@@ -1,4 +1,4 @@
-import React, { useState, useEffect} from "react";
+import React, { useEffect } from "react";
 import {
   Button,
   useTheme,
@@ -8,13 +8,13 @@ import {
 import { NavLink } from "react-router-dom";
 import { useMsal } from "@azure/msal-react";
 import Logo from "../assets/logo.svg";
-import { useEnvStore } from "@anthonyv449/ui-kit";
+import { useEnvStore, useGlobalData } from "@anthonyv449/ui-kit";
 
 const Navbar = ({ pages }) => {
   const theme = useTheme();
   const { instance, accounts } = useMsal();
   const { apiPath } = useEnvStore();
-  const [user, setUser] = useState(null);
+  const { user, setUser, logoutUser } = useGlobalData();
   
   const handleLogin = async () => {
      await instance.loginPopup({
@@ -35,17 +35,16 @@ const Navbar = ({ pages }) => {
   };
 
   const handleLogout = async () => {
-      await fetch("/api/auth/logout", {
-    method: "POST",
-    credentials: "include"
-  });
+    await logoutUser();
     instance.logoutPopup();
   };
 
-  useEffect(()=>{
-    var user = accounts.length > 0 ? accounts[0] : null
-    setUser(user);
-  },[accounts])
+  useEffect(() => {
+    const current = accounts.length > 0 ? accounts[0] : null;
+    if (user !== current) {
+      setUser(current);
+    }
+  }, [accounts, user, setUser]);
 
   return (
     <Grid

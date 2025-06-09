@@ -8,28 +8,23 @@ import Footer from "./Footer"; // Add this import
 import { ThemeContext } from "./ThemeContext.js";
 import { MsalProvider } from "@azure/msal-react";
 import { msalInstance } from "./msalConfig"; // adjust path if needed
-import { useEnvStore } from "@anthonyv449/ui-kit";
+import { useEnvStore, useGlobalData } from "@anthonyv449/ui-kit";
 import { useMsal } from "@azure/msal-react";
 
 const App = () => {
   const [content, setContent] = useState(null);
   const [remotes, setRemotes] = useState(null);
   const { loaded, loadEnv, apiPath } = useEnvStore();
+  const { loadUser } = useGlobalData();
   const { instance, accounts } = useMsal();
   useEffect(() => {
     loadEnv();
   }, [loadEnv]);
 
-  const [user, setUser] = useState(null);
   useEffect(() => {
-    if(!apiPath) return;
-    fetch(`${apiPath}/auth/me`, {
-      credentials: "include"
-    })
-      .then(res => (res.ok ? res.json() : null))
-      .then(profile => setUser(profile))
-      .catch(() => setUser(null));
-  }, [apiPath]);
+    if (!apiPath) return;
+    loadUser();
+  }, [apiPath, loadUser]);
 
 
   useEffect(() => {
