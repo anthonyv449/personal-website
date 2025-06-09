@@ -84,9 +84,9 @@ const RemoteRoute = ({ remote, remotesList }) => {
   const LazyComponent = useMemo(
     () =>
       lazy(() =>
-        loadRemoteModule(remoteName, remoteUrl, remoteConfig.exposedModule).then(comp => ({ default: comp }))
+        loadRemoteModule(remoteName, remoteUrl, remote.exposedModule).then(comp => ({ default: comp }))
       ),
-    [remoteName, remoteUrl, remoteConfig.exposedModule]
+    [remoteName, remoteUrl, remote.exposedModule]
   );
 
   return (
