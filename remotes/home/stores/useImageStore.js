@@ -1,11 +1,12 @@
 // src/stores/useImageStore.js
 import { create } from "zustand";
+import { withHostPath } from "@anthonyv449/ui-kit";
 
 export const useImageStore = create((set) => ({
   articleImages: [],
   loadArticleImages: async () => {
     try {
-      const response = await fetch("/GradImages/articleImages.json");
+      const response = await fetch(withHostPath("/GradImages/articleImages.json"));
       if (!response.ok) {
         throw new Error("Failed to fetch image data");
       }
@@ -15,7 +16,7 @@ export const useImageStore = create((set) => ({
         ...item,
         image: item.image.startsWith("/")
           ? item.image
-          : `/GradImages/${item.image}`,
+          : withHostPath(`/GradImages/${item.image}`),
       }));
 
       set({ articleImages: adjustedData });

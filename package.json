@@ -9,6 +9,7 @@
   ],
   "babel": {
     "presets": [
+      "@babel/preset-env",
       [
         "@babel/preset-react",
         {
@@ -20,11 +21,12 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "webpack serve",
-    "build": "webpack --mode production",
+    "build": "webpack --config webpack.config.js --mode production",
     "dev": "node ./scripts/setupApp.mjs",
     "create-remote": "node ./scripts/create-remote.mjs",
     "build:host": "node scripts/buildHost.mjs",
-    "build:all": "node scripts/buildAll.mjs"
+    "build:all": "node scripts/buildAll.mjs",
+    "publish:ui-kit": "cd ui-kit && npm publish --access public"
   },
   "keywords": [],
   "author": "",
@@ -47,11 +49,12 @@
     "zustand": "^5.0.3"
   },
   "devDependencies": {
-    "@babel/core": "^7.26.0",
-    "@babel/preset-env": "^7.26.0",
-    "@babel/preset-react": "^7.26.3",
+    "@babel/core": "^7.27.4",
+    "@babel/preset-env": "^7.27.2",
+    "@babel/preset-react": "^7.27.1",
     "@svgr/webpack": "^8.1.0",
     "babel-loader": "^9.2.1",
+    "copy-webpack-plugin": "^13.0.0",
     "html-webpack-plugin": "^5.6.3",
     "webpack": "^5.97.1",
     "webpack-cli": "^6.0.1",

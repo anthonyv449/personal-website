@@ -1,8 +1,10 @@
 import React, { useEffect, lazy, Suspense, useState } from "react";
 import { Routes, Route } from "react-router-dom";
+import { withRemotesPath } from "@anthonyv449/ui-kit"; // adjust the import path as needed
 
 const executedLoaders = new Set(); // Track which routes ran their loader
 const initializedContainers = new Set(); // Track which remotes were initialized
+const isDev = window.location.hostname === "localhost";
 
 function loadRemoteEntry(remoteTitle, remoteUrl) {
   return new Promise((resolve, reject) => {
@@ -11,34 +13,25 @@ function loadRemoteEntry(remoteTitle, remoteUrl) {
     const script = document.createElement("script");
     script.src = remoteUrl;
     script.async = true;
-    script.onload = () => {
-      resolve();
-    };
-    script.onerror = () => {
-      reject(new Error(`Failed to load remote entry: ${remoteUrl}`));
-    };
+    script.onload = () => resolve();
+    script.onerror = () => reject(new Error(`Failed to load remote entry: ${remoteUrl}`));
     document.head.appendChild(script);
   });
 }
 
 const findRemotePort = (rem, remotesList) => {
   for (const remote of remotesList) {
-    // Direct match with parent
     if (remote.name === rem.title) {
       return remote.port;
     }
-
-    // Check children titles
     if (Array.isArray(remote.children)) {
       const childMatch = remote.children.find(
         (child) => child.title === rem.title
       );
-      if (childMatch) {
-        return remote.port; // ✅ Return parent's port if child title matches
-      }
+      if (childMatch) return remote.port;
     }
   }
-  return null; // fallback if not found
+  return null;
 };
 
 const RemoteRoute = ({ remote, remotesList }) => {
@@ -52,16 +45,25 @@ const RemoteRoute = ({ remote, remotesList }) => {
 
       (async () => {
         try {
-          await loadRemoteEntry(
-            remote.title,
-            `http://localhost:${port}/remoteEntry.js`
+          const remoteConfig = remotesList.find(
+            (r) =>
+              r.name === remote.title ||
+              (r.children || []).some((c) => c.title === remote.title)
           );
 
+          if (!remoteConfig) {
+            throw new Error(`Remote config not found for ${remote.title}`);
+          }
+
+          const remoteUrl = isDev
+            ? `http://localhost:${port}/remoteEntry.js`
+            : withRemotesPath(`/${remoteConfig.name.toLowerCase()}/remoteEntry.js`);
+
+          await loadRemoteEntry(remote.title, remoteUrl);
           await __webpack_init_sharing__("default");
 
           const container = window[remote.title];
-          if (!container)
-            throw new Error(`Container ${remote.title} not found`);
+          if (!container) throw new Error(`Container ${remote.title} not found`);
 
           if (!initializedContainers.has(remote.title)) {
             await container.init(__webpack_share_scopes__.default);
@@ -98,11 +100,9 @@ const RemoteRoute = ({ remote, remotesList }) => {
       return () => {
         isMounted = false;
       };
-    }, []);
+    }, [remote, remotesList]);
 
-    if (!LazyComponent) {
-      return <div>Loading remote component...</div>;
-    }
+    if (!LazyComponent) return <div>Loading remote component...</div>;
 
     return (
       <Suspense fallback={<div>Loading remote component...</div>}>
@@ -124,19 +124,18 @@ const AppRoutes = ({ content, remotes }) => {
           element={<RemoteRoute remote={page} remotesList={remotes} />}
         />
       ))}
-      {content.pages.map((page) => {
-        if (page.children?.length > 0) {
-          return page.children.map((child) => {
-            return (
+
+      {content.pages.map((page) =>
+        page.children?.length > 0
+          ? page.children.map((child) => (
               <Route
                 key={child.id}
                 path={child.path}
                 element={<RemoteRoute remote={child} remotesList={remotes} />}
               />
-            );
-          });
-        }
-      })}
+            ))
+          : null
+      )}
     </Routes>
   );
 };

@@ -1,6 +1,6 @@
 {
   "name": "@anthonyv449/ui-kit",
-  "version": "1.1.1",
+  "version": "1.2.4",
   "description": "reusable UI components",
   "main": "index.js",
   "scripts": {
