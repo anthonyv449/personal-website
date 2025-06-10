@@ -1,74 +1,173 @@
-import React, { useState, useEffect } from "react";
-import { BrowserRouter as Router } from "react-router-dom";
-import { ThemeProvider, CssBaseline, Grid2 as Grid } from "@mui/material";
-import Navbar from "./Navbar.js";
-import AppRoutes from "./AppRoutes.js";
-import theme from "./theme.js";
-import Footer from "./Footer"; // Add this import
-import { ThemeContext } from "./ThemeContext.js";
-import { MsalProvider } from "@azure/msal-react";
-import { msalInstance } from "./msalConfig"; // adjust path if needed
-import { useEnvStore, useGlobalData } from "@anthonyv449/ui-kit";
-import { useMsal } from "@azure/msal-react";
+import React, { Suspense, useState, useEffect } from 'react';
+import { createBrowserRouter, RouterProvider, Outlet, useRouteError } from 'react-router-dom';
+import { HelmetProvider, Helmet } from 'react-helmet-async';
+import { ThemeProvider, CssBaseline, Grid2 as Grid } from '@mui/material';
+import Navbar from './Navbar.js';
+import Footer from './Footer.js';
+import theme from './theme.js';
+import { ThemeContext } from './ThemeContext.js';
+import { MsalProvider } from '@azure/msal-react';
+import { msalInstance } from './msalConfig.js';
+import { useEnvStore, withRemotesPath } from '@anthonyv449/ui-kit';
+import { useGlobalData } from '@anthonyv449/ui-kit';
 
-const App = () => {
+const executedLoaders = new Set();
+/**
+ * Generic lazy loader for Module Federation remotes
+ * @param {{remoteName: string, remoteUrl: string, scope?: string, module: string}} options
+ */
+export function lazyLoad({ remoteName, remoteUrl, scope = remoteName, module: exposedModule }) {
+  return React.lazy(
+    () =>
+      new Promise((resolve, reject) => {
+        const scriptId = `${remoteName}-remote-script`;
+        if (document.getElementById(scriptId)) {
+          return loadRemoteModule();
+        }
+        const element = document.createElement('script');
+        element.id = scriptId;
+        element.src = remoteUrl;
+        element.type = 'text/javascript';
+        element.async = false;
+        element.onload = loadRemoteModule;
+        element.onerror = () => reject(new Error(`Failed to load remote entry: ${remoteUrl}`));
+        document.head.appendChild(element);
+
+        function loadRemoteModule() {
+          Promise.resolve(__webpack_init_sharing__('default'))
+            .then(() => {
+              const container = window[scope];
+              // Initialize shared scope
+              container.init(__webpack_share_scopes__.default);
+              // Get module factory
+              return container.get(exposedModule);
+            })
+            .then((factory) => {
+              const Module = factory();
+              // Run loader hook once
+              if (typeof Module.loader === 'function' && !executedLoaders.has(exposedModule)) {
+                return Promise.resolve(Module.loader()).then(() => {
+                  executedLoaders.add(exposedModule);
+                  return Module;
+                });
+              }
+              return Module;
+            })
+            .then((Module) => resolve(Module))
+            .catch((err) => reject(err));
+        }
+      })
+  );
+}
+
+
+function RouteError() {
+  const error = useRouteError();
+  console.error('Route error:', error);
+  return (
+    <div style={{ padding: 20 }}>
+      <h1>Something went wrong</h1>
+      <p>{error?.message ?? 'Unknown error occurred.'}</p>
+    </div>
+  );
+}
+
+export default function App() {
+  
   const [content, setContent] = useState(null);
   const [remotes, setRemotes] = useState(null);
-  const { loaded, loadEnv, apiPath } = useEnvStore();
+  const { loaded, loadEnv, apiPath, hostPath } = useEnvStore();
   const { loadUser } = useGlobalData();
-  const { instance, accounts } = useMsal();
-  useEffect(() => {
-    loadEnv();
-  }, [loadEnv]);
+  const isDev = process.env.NODE_ENV === 'development';
 
-  useEffect(() => {
-    if (!apiPath) return;
-    loadUser();
-  }, [apiPath, loadUser]);
+  // Load environment and user data
+  useEffect(() => { loadEnv(); }, [loadEnv]);
+  useEffect(() => { if (apiPath) loadUser(); }, [apiPath, loadUser]);
 
-
+  // Fetch content and remotes definitions
   useEffect(() => {
     if (!loaded) return;
-    fetch("/content.json")
-      .then((res) => res.json())
-      .then((data) => setContent(data))
-      .catch((error) => console.log(error));
-
-    fetch("/remotes.json")
-      .then((res) => res.json())
-      .then((data) => setRemotes(data))
-      .catch((error) => console.log(error));
-  }, [loaded]);
+    Promise.all([
+      fetch(`${hostPath}/content.json`).then(res => res.json()),
+      fetch(`${hostPath}/remotes.json`).then(res => res.json()),
+    ])
+      .then(([contentData, remotesData]) => {
+        console.log(contentData)
+        setContent(contentData);
+        setRemotes(remotesData);
+      })
+      .catch(error => console.error('Data fetch error:', error));
+  }, [loaded, hostPath]);
 
   if (!content || !remotes) return <div>Loading...</div>;
+
+  // Build dynamic route entries based on content.pages
+  const dynamicRoutes = [];
+
+  content.pages.forEach(page => {
+    const { id, path: pagePath, title, exposedModule, children } = page;
+    const remoteConfig = remotes.find(r => r.name.toLowerCase() === id.toLowerCase());
+    if (!remoteConfig) return;
+
+    const { name: remoteName, port } = remoteConfig;
+
+    // Determine remote entry URL depending on environment
+    const localUrl = `http://localhost:${port}/remoteEntry.js`;
+    const prodPath = `${remoteName.toLowerCase()}/remoteEntry.js`;
+    const remoteEntryUrl = isDev
+      ? localUrl
+      : withRemotesPath(prodPath);
+
+    const createRoute = ({ path, moduleKey, pageTitle }) => {
+      const trimmed = path.replace(/^\//, '');
+      const RemoteComponent = lazyLoad({ remoteName, remoteUrl: remoteEntryUrl, scope: remoteName, module: moduleKey });
+      const element = (
+        <>
+          <Helmet><title>{pageTitle}</title></Helmet>
+          <Suspense fallback={<div>Loading {remoteName}...</div>}>
+            <RemoteComponent />
+          </Suspense>
+        </>
+      );
+      return trimmed === ''
+        ? { index: true, element, errorElement: <RouteError /> } //this is for home 
+        : { path: trimmed, element, errorElement: <RouteError /> };
+    };
+
+    // Top-level route for this page
+    dynamicRoutes.push(createRoute({ path: pagePath, moduleKey: exposedModule, pageTitle: title }));
+    // Child routes if any
+    if (Array.isArray(children)) {
+      children.forEach(child => {
+        dynamicRoutes.push(createRoute({ path: child.path, moduleKey: child.exposedModule, pageTitle: child.title }));
+      });
+    }
+  });
+
+  // Configure router with layout
+  const router = createBrowserRouter([
+    {
+      path: '/',
+      element: (
+        <HelmetProvider>
+          <Helmet><title>My Host App</title></Helmet>
+          <Grid container direction="column" sx={{ minHeight: '100vh' }}>
+            <Grid component="header" size="auto"><Navbar pages={content.pages} remotes={remotes} /></Grid>
+            <Grid component="main" size="grow"><Suspense fallback={<div>Loading...</div>}><Outlet /></Suspense></Grid>
+            <Grid component="footer" size="auto"><Footer /></Grid>
+          </Grid>
+        </HelmetProvider>
+      ),
+      errorElement: <RouteError />, 
+      children: dynamicRoutes,
+    },
+  ]);
 
   return (
     <MsalProvider instance={msalInstance}>
       <ThemeContext.Provider value={theme}>
-        <ThemeProvider theme={theme}>
-          <CssBaseline />
-          <Router>
-            <Grid
-              container
-              direction="column"
-              component="div"
-              sx={{ minHeight: "100vh" }}
-            >
-              <Grid component="header" size="auto">
-                <Navbar pages={content.pages} />
-              </Grid>
-              <Grid component="main" size="grow">
-                <AppRoutes content={content} remotes={remotes} />
-              </Grid>
-              <Grid component="footer" size="auto">
-                <Footer />
-              </Grid>
-            </Grid>
-          </Router>
-        </ThemeProvider>
+        <ThemeProvider theme={theme}><CssBaseline /><RouterProvider router={router} /></ThemeProvider>
       </ThemeContext.Provider>
     </MsalProvider>
   );
-};
-
-export default App;
+}
