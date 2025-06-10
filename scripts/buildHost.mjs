@@ -95,7 +95,7 @@ async function buildHost() {
   const remotes = await loadRemotes();
   const remotesMap = {};
   remotes.forEach((r) => {
-    remotesMap[r.name] = `${r.name}@/dist/${r.name}/remoteEntry.js`;
+    remotesMap[r.name] = `${r.name}@/remotes/${r.name.toLowerCase()}/latest/remoteEntry.js`;
   });
   const hostDeps = require("../package.json").dependencies;
   const shared = generateShared(hostDeps);
