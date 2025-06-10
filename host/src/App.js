@@ -33,17 +33,27 @@ export function lazyLoad({ remoteName, remoteUrl, scope = remoteName, module }) 
         element.onerror = () => reject(new Error(`Failed to load remote entry: ${remoteUrl}`));
         document.head.appendChild(element);
 
-        function loadModule() {
-          // Initialize shared scope for module federation
-          
-          Promise.resolve(__webpack_init_sharing__('default'))
-            .then(() => Promise.resolve(window[scope].init(__webpack_share_scopes__.default)))
-            .then(() => window[scope].get(module))
-            .then(factory => factory())
-            .then(Module => 
-                resolve(Module)
-            )
-            .catch(reject);
+        async function loadModule() {
+                try {
+                    // 1) Initialize shared scope
+                    await Promise.resolve(__webpack_init_sharing__('default'));
+                    // 2) Get container
+                    const container = window[scope];
+                    // 3) Initialize container with shared scope
+                    container.init(__webpack_share_scopes__.default);
+                    // 4) Load module factory
+                    const factory = await container.get(module);
+                    const Module = factory();
+                    // 5) run any loader hook once
+                    if (typeof Module.loader === 'function' && !executedLoaders.has(module)) {
+                      await Module.loader();
+                      executedLoaders.add(module);
+                    }
+                    // 6) resolve
+                    resolve(Module);
+                  } catch (err) {
+                    reject(err);
+                  }
         }
       })
   );
