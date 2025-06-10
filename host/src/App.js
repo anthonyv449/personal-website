@@ -113,7 +113,7 @@ export default function App() {
 
     // Determine remote entry URL depending on environment
     const localUrl = `http://localhost:${port}/remoteEntry.js`;
-    const prodPath = `${remoteName.toLowerCase()}/remoteEntry.js`;
+    const prodPath = `${remoteName.toLowerCase()}/latest/remoteEntry.js`;
     const remoteEntryUrl = isDev
       ? localUrl
       : withRemotesPath(prodPath);

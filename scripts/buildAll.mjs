@@ -36,12 +36,12 @@ function mergeShared(hostShared) {
   return hostShared;
 }
 
-function createRemoteConfig(remote, hostShared) {
+function createRemoteConfig(remote, hostShared, version) {
   return {
     mode: "production",
     entry: path.resolve(process.cwd(), remote.entry),
     output: {
-      path: path.resolve(process.cwd(), "dist", remote.name),
+      path: path.resolve(process.cwd(), "dist", remote.name, version),
       filename: "bundle.js",
       publicPath: "auto",
       library: { type: "var", name: remote.name },
@@ -143,14 +143,28 @@ function runWebpack(config, label) {
 }
 
 async function buildAll() {
-  const remotes = await loadRemotes();
+  let remotes = await loadRemotes();
+  const only = process.env.REMOTE_NAMES
+    ? process.env.REMOTE_NAMES.split(/[,\s]+/).filter(Boolean)
+    : null;
+  if (only) {
+    remotes = remotes.filter(r =>
+      only.includes(r.name) || only.includes(r.name.toLowerCase())
+    );
+  }
   const hostDeps = require(path.resolve(process.cwd(), "package.json")).dependencies;
   const hostShared = generateShared(hostDeps);
 
   const remotesMap = {};
   for (const r of remotes) {
-    await runWebpack(createRemoteConfig(r, hostShared), r.name);
-    remotesMap[r.name] = `${r.name}@${r.name}/remoteEntry.js`;
+    const pkg = require(path.resolve(process.cwd(), r.folder, 'package.json'));
+    const version = pkg.version;
+    await runWebpack(createRemoteConfig(r, hostShared, version), `${r.name} v${version}`);
+    const versionPath = path.resolve(process.cwd(), 'dist', r.name, version);
+    const latestPath = path.resolve(process.cwd(), 'dist', r.name, 'latest');
+    await fs.rm(latestPath, { recursive: true, force: true });
+    await fs.cp(versionPath, latestPath, { recursive: true });
+    remotesMap[r.name] = `${r.name}@/remotes/${r.name.toLowerCase()}/latest/remoteEntry.js`;
   }
 
   await runWebpack(createHostConfig(remotesMap, hostShared), "host");

@@ -44,7 +44,7 @@ GPA: 3.435 | Dean’s Honor List: 7 quarters
 
 ## Certifications
 
-- **Microsoft Azure Fundamentals** — *In Progress*  
+- **Microsoft Azure Fundamentals** 
   Currently taking a certification course focused on core Azure services, cloud concepts, and solutions.
 
 ---

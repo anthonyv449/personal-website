@@ -15,7 +15,6 @@ export const loader = async () => {
   const { loadArticles } = useArticleStore.getState();
   return loadArticles();
 };
-
 const Writings = () => {
   const navigate = useNavigate();
   const { articles } = useArticleStore();
