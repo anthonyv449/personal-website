@@ -16,48 +16,50 @@ const executedLoaders = new Set();
  * Generic lazy loader for Module Federation remotes
  * @param {{remoteName: string, remoteUrl: string, scope?: string, module: string}} options
  */
-export function lazyLoad({ remoteName, remoteUrl, scope = remoteName, module }) {
+export function lazyLoad({ remoteName, remoteUrl, scope = remoteName, module: exposedModule }) {
   return React.lazy(
     () =>
       new Promise((resolve, reject) => {
         const scriptId = `${remoteName}-remote-script`;
         if (document.getElementById(scriptId)) {
-          return loadModule();
+          return loadRemoteModule();
         }
         const element = document.createElement('script');
         element.id = scriptId;
         element.src = remoteUrl;
         element.type = 'text/javascript';
         element.async = false;
-        element.onload = loadModule;
+        element.onload = loadRemoteModule;
         element.onerror = () => reject(new Error(`Failed to load remote entry: ${remoteUrl}`));
         document.head.appendChild(element);
 
-        async function loadModule() {
-                try {
-                    // 1) Initialize shared scope
-                    await Promise.resolve(__webpack_init_sharing__('default'));
-                    // 2) Get container
-                    const container = window[scope];
-                    // 3) Initialize container with shared scope
-                    container.init(__webpack_share_scopes__.default);
-                    // 4) Load module factory
-                    const factory = await container.get(module);
-                    const Module = factory();
-                    // 5) run any loader hook once
-                    if (typeof Module.loader === 'function' && !executedLoaders.has(module)) {
-                      await Module.loader();
-                      executedLoaders.add(module);
-                    }
-                    // 6) resolve
-                    resolve(Module);
-                  } catch (err) {
-                    reject(err);
-                  }
+        function loadRemoteModule() {
+          Promise.resolve(__webpack_init_sharing__('default'))
+            .then(() => {
+              const container = window[scope];
+              // Initialize shared scope
+              container.init(__webpack_share_scopes__.default);
+              // Get module factory
+              return container.get(exposedModule);
+            })
+            .then((factory) => {
+              const Module = factory();
+              // Run loader hook once
+              if (typeof Module.loader === 'function' && !executedLoaders.has(exposedModule)) {
+                return Promise.resolve(Module.loader()).then(() => {
+                  executedLoaders.add(exposedModule);
+                  return Module;
+                });
+              }
+              return Module;
+            })
+            .then((Module) => resolve(Module))
+            .catch((err) => reject(err));
         }
       })
   );
 }
+
 
 function RouteError() {
   const error = useRouteError();
@@ -90,6 +92,7 @@ export default function App() {
       fetch(`${hostPath}/remotes.json`).then(res => res.json()),
     ])
       .then(([contentData, remotesData]) => {
+        console.log(contentData)
         setContent(contentData);
         setRemotes(remotesData);
       })
@@ -106,8 +109,7 @@ export default function App() {
     const remoteConfig = remotes.find(r => r.name.toLowerCase() === id.toLowerCase());
     if (!remoteConfig) return;
 
-    const { name: remoteName, port, folder, entry } = remoteConfig;
-    const entryPath = entry.replace(/^\.\//, '').replace(/^\/+/, '');
+    const { name: remoteName, port } = remoteConfig;
 
     // Determine remote entry URL depending on environment
     const localUrl = `http://localhost:${port}/remoteEntry.js`;
