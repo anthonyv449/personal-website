@@ -67,14 +67,14 @@ jobs:
         uses: azure/CLI@v1
         with:
           inlineScript: |
+            tmpfile=$(mktemp)
             for remote in $REMOTE_NAMES; do
               lower=$(echo "$remote" | tr '[:upper:]' '[:lower:]')
               version=$(grep -oP '"version":\s*"\K[^" ]+' "remotes/${lower}/package.json")
               src="dist/${remote}/${version}"
-              if [ ! -d "$src" ]; then
-                echo "Directory $src not found. Creating it so upload doesn't fail."
-                mkdir -p "$src"
-              fi
+              az storage blob upload --account-name uiremotes --container-name '$web' --file "$tmpfile" --name "remotes/${lower}/${version}/.init" --overwrite --auth-mode login
+              az storage blob upload --account-name uiremotes --container-name '$web' --file "$tmpfile" --name "remotes/${lower}/latest/.init" --overwrite --auth-mode login
               az storage blob upload-batch --account-name uiremotes -s "$src" -d '$web' --destination-path "remotes/${lower}/${version}" --overwrite --auth-mode login
               az storage blob upload-batch --account-name uiremotes -s "$src" -d '$web' --destination-path "remotes/${lower}/latest" --overwrite --auth-mode login
             done
+            rm "$tmpfile"
