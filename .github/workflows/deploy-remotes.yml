@@ -10,38 +10,61 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+
+      - name: Detect changed remotes
+        id: detect
+        shell: bash
+        run: |
+          base="${{ github.event.before }}"
+          if [ -z "$base" ]; then
+            base=$(git rev-parse HEAD^)
+          fi
+          dirs=$(git diff --name-only "$base" "$GITHUB_SHA" -- remotes | awk -F/ '/^remotes\/[^\/]+\//{print $2}' | sort -u | xargs)
+          echo "REMOTE_NAMES=$dirs" >> $GITHUB_ENV
+
+      - name: Exit if no remote changes
+        if: env.REMOTE_NAMES == ''
+        run: echo 'No remote changes detected.'
 
       - name: Setup Node.js
+        if: env.REMOTE_NAMES != ''
         uses: actions/setup-node@v3
         with:
           node-version: 18
           cache: 'npm'
 
       - name: Install dependencies
+        if: env.REMOTE_NAMES != ''
         run: npm ci
 
-      - name: Build all remotes
-        run: node scripts/buildAll.mjs
+      - name: Build changed remotes
+        if: env.REMOTE_NAMES != ''
+        run: |
+          REMOTE_NAMES="$REMOTE_NAMES" node scripts/buildAll.mjs
 
       - name: Azure Login
+        if: env.REMOTE_NAMES != ''
         uses: azure/login@v1
         with:
           creds: ${{ secrets.AZURE_CREDENTIALS }}
 
       - name: Ensure $web container exists
+        if: env.REMOTE_NAMES != ''
         uses: azure/CLI@v1
         with:
           inlineScript: |
             az storage container create --account-name uiremotes -n '$web' --auth-mode login
 
       - name: Upload remotes to Azure Storage
+        if: env.REMOTE_NAMES != ''
         uses: azure/CLI@v1
         with:
           inlineScript: |
-            for dir in $(ls dist); do
-              if [ "$dir" = "host" ]; then
-                continue
-              fi
-              remote_name=$(echo "$dir" | tr '[:upper:]' '[:lower:]')
-              az storage blob upload-batch --account-name uiremotes -s "dist/$dir" -d '$web' --destination-path "remotes/$remote_name" --overwrite --auth-mode login
+            for remote in $REMOTE_NAMES; do
+              lower=$(echo "$remote" | tr '[:upper:]' '[:lower:]')
+              version=$(node -p "require('./remotes/${lower}/package.json').version")
+              az storage blob upload-batch --account-name uiremotes -s "dist/${remote}/${version}" -d '$web' --destination-path "remotes/${lower}/${version}" --overwrite --auth-mode login
+              az storage blob upload-batch --account-name uiremotes -s "dist/${remote}/${version}" -d '$web' --destination-path "remotes/${lower}/latest" --overwrite --auth-mode login
             done
