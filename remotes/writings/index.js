@@ -14,6 +14,7 @@ export const loader = async () => {
   //add in API calls here from store
   const { loadArticles } = useArticleStore.getState();
   return loadArticles();
+  //change
 };
 const Writings = () => {
   const navigate = useNavigate();

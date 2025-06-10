@@ -25,6 +25,7 @@ const Home = () => {
       return acc;
     }, []);
   };
+  //change
   const meSectionComponent = <MeSection />;
   // Map articleImages to CustomCard components
   const cardComponents = articleImages.map((image, index) => (
