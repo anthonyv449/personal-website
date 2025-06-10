@@ -148,7 +148,9 @@ async function buildAll() {
     ? process.env.REMOTE_NAMES.split(/[,\s]+/).filter(Boolean)
     : null;
   if (only) {
-    remotes = remotes.filter(r => only.includes(r.name));
+    remotes = remotes.filter(r =>
+      only.includes(r.name) || only.includes(r.name.toLowerCase())
+    );
   }
   const hostDeps = require(path.resolve(process.cwd(), "package.json")).dependencies;
   const hostShared = generateShared(hostDeps);

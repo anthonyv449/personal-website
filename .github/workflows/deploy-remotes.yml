@@ -39,6 +39,11 @@ jobs:
         if: env.REMOTE_NAMES != ''
         run: npm ci
 
+      - name: Bump remote versions
+        if: env.REMOTE_NAMES != ''
+        run: |
+          REMOTE_NAMES="$REMOTE_NAMES" node scripts/bumpRemoteVersions.mjs
+
       - name: Build changed remotes
         if: env.REMOTE_NAMES != ''
         run: |
