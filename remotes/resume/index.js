@@ -7,6 +7,7 @@ export const loader = async () => {
   const { fetchResume } = useResumeStore.getState();
   return fetchResume();
 };
+  //testing version increase
 
 const Resume = () => {
   const { resumeMarkdown } = useResumeStore();
