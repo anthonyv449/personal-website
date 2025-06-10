@@ -67,9 +67,14 @@ jobs:
         uses: azure/CLI@v1
         with:
           inlineScript: |
+            tmpfile=$(mktemp)
             for remote in $REMOTE_NAMES; do
               lower=$(echo "$remote" | tr '[:upper:]' '[:lower:]')
               version=$(grep -oP '"version":\s*"\K[^" ]+' "remotes/${lower}/package.json")
-              az storage blob upload-batch --account-name uiremotes -s "dist/${remote}/${version}" -d '$web' --destination-path "remotes/${lower}/${version}" --overwrite --auth-mode login
-              az storage blob upload-batch --account-name uiremotes -s "dist/${remote}/${version}" -d '$web' --destination-path "remotes/${lower}/latest" --overwrite --auth-mode login
+              src="dist/${remote}/${version}"
+              az storage blob upload --account-name uiremotes --container-name '$web' --file "$tmpfile" --name "remotes/${lower}/${version}/.init" --overwrite --auth-mode login
+              az storage blob upload --account-name uiremotes --container-name '$web' --file "$tmpfile" --name "remotes/${lower}/latest/.init" --overwrite --auth-mode login
+              az storage blob upload-batch --account-name uiremotes -s "$src" -d '$web' --destination-path "remotes/${lower}/${version}" --overwrite --auth-mode login
+              az storage blob upload-batch --account-name uiremotes -s "$src" -d '$web' --destination-path "remotes/${lower}/latest" --overwrite --auth-mode login
             done
+            rm "$tmpfile"
