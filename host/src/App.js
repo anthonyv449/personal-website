@@ -29,16 +29,17 @@ const App = () => {
 
   useEffect(() => {
     if (!loaded) return;
-    fetch("/content.json")
-      .then((res) => res.json())
-      .then((data) => setContent(data))
-      .catch((error) => console.log(error));
-
-    fetch("/remotes.json")
-      .then((res) => res.json())
-      .then((data) => setRemotes(data))
-      .catch((error) => console.log(error));
-  }, [loaded]);
+    Promise.all([
+      fetch(`/content.json`).then(res => res.json()),
+      fetch(`/remotes.json`).then(res => res.json()),
+    ])
+      .then(([contentData, remotesData]) => {
+        console.log(contentData)
+        setContent(contentData);
+        setRemotes(remotesData);
+      })
+      .catch(error => console.error('Data fetch error:', error));
+  }, [loaded, hostPath]);
 
   if (!content || !remotes) return <div>Loading...</div>;
 
