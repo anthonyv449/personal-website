@@ -69,7 +69,7 @@ jobs:
           inlineScript: |
             for remote in $REMOTE_NAMES; do
               lower=$(echo "$remote" | tr '[:upper:]' '[:lower:]')
-              version=$(node -p "require('./remotes/${lower}/package.json').version")
+              version=$(grep -oP '"version":\s*"\K[^" ]+' "remotes/${lower}/package.json")
               az storage blob upload-batch --account-name uiremotes -s "dist/${remote}/${version}" -d '$web' --destination-path "remotes/${lower}/${version}" --overwrite --auth-mode login
               az storage blob upload-batch --account-name uiremotes -s "dist/${remote}/${version}" -d '$web' --destination-path "remotes/${lower}/latest" --overwrite --auth-mode login
             done
