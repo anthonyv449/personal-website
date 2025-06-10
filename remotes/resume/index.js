@@ -14,32 +14,46 @@ const Resume = () => {
 
   return (
     <Box sx={{ padding: 4 }}>
-      <Typography variant="h4" gutterBottom>
-        Resume
-      </Typography>
       <ReactMarkdown
-        components={{
-          h1: ({ node, ...props }) => (
+  components={{
+    h1: ({ node, ...props }) => (
             <Typography variant="h4" gutterBottom {...props} />
           ),
-          h2: ({ node, ...props }) => (
-            <Typography variant="h5" gutterBottom {...props} />
-          ),
-          h3: ({ node, ...props }) => (
-            <Typography variant="h6" gutterBottom {...props} />
-          ),
-          p: ({ node, ...props }) => (
-            <Typography variant="body1" paragraph {...props} />
-          ),
-          li: ({ node, ...props }) => <ListItem {...props} />,
-          ul: ({ node, ...props }) => <List sx={{ pl: 4 }} {...props} />,
-          ol: ({ node, ...props }) => (
-            <List sx={{ pl: 4 }} component="ol" {...props} />
-          ),
+    h2: ({ node, ...props }) => (
+      <Typography variant="h5" gutterBottom {...props} />
+    ),
+    h3: ({ node, ...props }) => (
+      <Typography variant="h6" gutterBottom {...props} />
+    ),
+    p: ({ node, ...props }) => (
+      <Typography variant="body1" paragraph {...props} />
+    ),
+    ul: ({ node, ...props }) => (
+      <Box component="ul" sx={{ pl: 4, m: 0 }} {...props} />
+    ),
+    li: ({ node, ...props }) => (
+      <Typography
+        component="li"
+        variant="body1"
+        sx={{
+          listStyleType: "disc",
+          pl: 2,
+          mb: 1,
         }}
-      >
-        {resumeMarkdown}
-      </ReactMarkdown>
+        {...props}
+      />
+    ),
+    strong: ({ node, ...props }) => (
+      <Typography
+        component="span"
+        sx={{ fontWeight: "bold", display: "inline" }}
+        {...props}
+      />
+    ),
+  }}
+>
+  {resumeMarkdown}
+</ReactMarkdown>
     </Box>
   );
 };

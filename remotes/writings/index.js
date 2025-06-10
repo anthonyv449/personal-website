@@ -15,7 +15,6 @@ export const loader = async () => {
   const { loadArticles } = useArticleStore.getState();
   return loadArticles();
 };
-  //testing version increase
 
 const Writings = () => {
   const navigate = useNavigate();
