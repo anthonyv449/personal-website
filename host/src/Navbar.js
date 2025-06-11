@@ -95,7 +95,7 @@ const Navbar = ({ pages }) => {
               paddingTop: "0.125rem",
             }}
           >
-            Logout ({user.name})
+            Logout
           </Button>
         ) : (
           <Button
@@ -106,7 +106,7 @@ const Navbar = ({ pages }) => {
               paddingTop: "0.125rem",
             }}
           >
-            Sign in with Google
+            Sign in
           </Button>
         )}
       </Grid>
