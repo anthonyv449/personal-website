@@ -1,5 +1,5 @@
 import React, { Suspense, useState, useEffect } from 'react';
-import { createBrowserRouter, RouterProvider, Outlet, useRouteError } from 'react-router-dom';
+import { createBrowserRouter, RouterProvider, Outlet, useRouteError, Navigate } from 'react-router-dom';
 import { HelmetProvider, Helmet } from 'react-helmet-async';
 import { ThemeProvider, CssBaseline, Grid2 as Grid } from '@mui/material';
 import Navbar from './Navbar.js';
