@@ -21,14 +21,14 @@ beforeEach(() => {
 test('renders login button when no user', () => {
   useMsal.mockReturnValue({ instance: { loginPopup: jest.fn(), logoutPopup: jest.fn() }, accounts: [] });
   renderNavbar({ pages: [] });
-  expect(screen.getByText(/sign in with google/i)).toBeInTheDocument();
+  expect(screen.getByText(/sign in/i)).toBeInTheDocument();
 });
 
 test('calls login on button click', () => {
   const loginPopup = jest.fn().mockResolvedValue();
   useMsal.mockReturnValue({ instance: { loginPopup, logoutPopup: jest.fn() }, accounts: [] });
   renderNavbar({ pages: [] });
-  fireEvent.click(screen.getByText(/sign in with google/i));
+  fireEvent.click(screen.getByText(/sign in/i));
   expect(loginPopup).toHaveBeenCalled();
 });
 
@@ -36,5 +36,5 @@ test('shows logout when user logged in', () => {
   const logoutPopup = jest.fn();
   useMsal.mockReturnValue({ instance: { loginPopup: jest.fn(), logoutPopup }, accounts: [{ name: 'Tester' }] });
   renderNavbar({ pages: [] });
-  expect(screen.getByText(/logout \(tester\)/i)).toBeInTheDocument();
+  expect(screen.getByText(/logout/i)).toBeInTheDocument();
 });

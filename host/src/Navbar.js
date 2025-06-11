@@ -8,12 +8,11 @@ import {
 import { NavLink } from "react-router-dom";
 import { useMsal } from "@azure/msal-react";
 import Logo from "../assets/logo.svg";
-import { useEnvStore, useGlobalData } from "@anthonyv449/ui-kit";
+import { useGlobalData, withApiPath } from "@anthonyv449/ui-kit";
 
 const Navbar = ({ pages }) => {
   const theme = useTheme();
   const { instance, accounts } = useMsal();
-  const { apiPath } = useEnvStore();
   const { user, setUser, logoutUser } = useGlobalData();
   
   const handleLogin = async () => {
@@ -22,7 +21,7 @@ const Navbar = ({ pages }) => {
     }).then((loginResponse)=>
     { 
       var idToken = loginResponse.idToken;
-      fetch(`${apiPath}/auth/microsoft`, {
+      fetch(withApiPath("/auth/microsoft"), {
         method: "POST",
         credentials: "include",
         headers: {"Content-Type":"application/json"},
