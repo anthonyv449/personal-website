@@ -33,12 +33,29 @@ export function lazyLoad({ remoteName, remoteUrl, scope = remoteName, module: ex
         element.onerror = () => reject(new Error(`Failed to load remote entry: ${remoteUrl}`));
         document.head.appendChild(element);
 
+        function waitForContainer(timeout = 2000) {
+          const start = Date.now();
+          return new Promise((res, rej) => {
+            const check = () => {
+              const container = window[scope];
+              if (container) return res(container);
+              if (Date.now() - start > timeout) {
+                return rej(new Error(`Container ${scope} not found`));
+              }
+              setTimeout(check, 50);
+            };
+            check();
+          });
+        }
+
         function loadRemoteModule() {
           Promise.resolve(__webpack_init_sharing__('default'))
-            .then(() => {
-              const container = window[scope];
+            .then(() => waitForContainer())
+            .then((container) => {
               // Initialize shared scope
-              container.init(__webpack_share_scopes__.default);
+              return Promise.resolve(container.init(__webpack_share_scopes__.default)).then(() => container);
+            })
+            .then((container) => {
               // Get module factory
               return container.get(exposedModule);
             })
