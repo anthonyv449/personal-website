@@ -8,12 +8,9 @@ import { Spinner } from "@anthonyv449/ui-kit";
 export const loader = async () => {
   //add in API calls here from store
   const articleStore = useArticleStore.getState();
-  const { currentArticle } = articleStore;
-  if (!currentArticle) {
-    const slug = window.location.pathname.split("/").filter(Boolean).pop();
-    await articleStore.loadArticle(slug);
-  }
-};
+  await articleStore.loadArticles();
+  };
+
 const Article = () => {
   const [markdown, setMarkdown] = useState("");
   const { currentArticle } = useArticleStore();
@@ -44,7 +41,7 @@ const Article = () => {
       <Typography variant="h6" gutterBottom {...props} />
     ),
     p: ({ node, ...props }) => (
-      <Typography variant="body1" paragraph {...props} />
+      <Typography variant="body1"  {...props} />
     ),
     ul: ({ node, ...props }) => (
       <Box component="ul" sx={{ pl: 4, m: 0 }} {...props} />

@@ -1,5 +1,5 @@
 import { create } from "zustand";
-import { withHostPath, withApiPath, useEnvStore } from "@anthonyv449/ui-kit";
+import { withApiPath, useEnvStore } from "@anthonyv449/ui-kit";
 
 export const useArticleStore = create((set, get) => ({
   articles: [],
@@ -22,13 +22,6 @@ export const useArticleStore = create((set, get) => ({
       set({ currentArticle: article });
       return;
     }
-
-    const res = await fetch(withHostPath("/articles/articles.json"));
-    const data = await res.json();
-    const article = data.find((d) => d.slug === currentSlug);
-    const articleReponse = await fetch(withHostPath(article.file));
-    const articleText = await articleReponse.text();
-    set({ currentArticle: { ...article, articleText } });
   },
 
   getArticleBySlug: (slug) => {
