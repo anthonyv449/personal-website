@@ -1,5 +1,5 @@
 import { create } from "zustand";
-import { useEnvStore } from "./useEnv";
+import { useEnvStore, withApiPath } from "./useEnv";
 
 export const useGlobalData = create((set) => ({
   user: null,
@@ -8,7 +8,7 @@ export const useGlobalData = create((set) => ({
     const { apiPath } = useEnvStore.getState();
     if (!apiPath) return;
     try {
-      const res = await fetch(`${apiPath}/auth/me`, { credentials: "include" });
+      const res = await fetch(withApiPath("/auth/me"), { credentials: "include" });
       const data = res.ok ? await res.json() : null;
       set({ user: data });
     } catch (err) {
@@ -20,7 +20,7 @@ export const useGlobalData = create((set) => ({
     const { apiPath } = useEnvStore.getState();
     if (!apiPath) return;
     try {
-      await fetch(`${apiPath}/auth/logout`, {
+      await fetch(withApiPath("/auth/logout"), {
         method: "POST",
         credentials: "include",
       });

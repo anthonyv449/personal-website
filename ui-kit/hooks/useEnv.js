@@ -62,3 +62,14 @@ export const withRemotesPath = (path) => {
   const { domain } = useEnvStore.getState();
   return join(domain + REMOTES_PATH, path);
 };
+
+/**
+ * Builds an API url if apiPath is set; otherwise falls back to host path.
+ * Example: withApiPath('/articles', '/articles/articles.json')
+ * → apiPath set:    'https://api.site.com/articles'
+ * → apiPath unset:  'https://cdn.site.com/host/articles/articles.json'
+ */
+export const withApiPath = (path, hostFallback = path) => {
+  const { apiPath } = useEnvStore.getState();
+  return apiPath ? join(apiPath, path) : withHostPath(hostFallback);
+};
