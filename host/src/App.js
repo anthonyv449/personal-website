@@ -153,6 +153,12 @@ export default function App() {
 
     // Top-level route for this page
     dynamicRoutes.push(createRoute({ path: pagePath, moduleKey: exposedModule, pageTitle: title }));
+    // Also handle /home route for the home page
+    if (pagePath === '/') {
+      dynamicRoutes.push(
+        createRoute({ path: '/home', moduleKey: exposedModule, pageTitle: title })
+      );
+    }
     // Child routes if any
     if (Array.isArray(children)) {
       children.forEach(child => {
