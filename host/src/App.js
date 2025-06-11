@@ -1,5 +1,5 @@
 import React, { Suspense, useState, useEffect } from 'react';
-import { createBrowserRouter, RouterProvider, Outlet, useRouteError } from 'react-router-dom';
+import { createBrowserRouter, RouterProvider, Outlet, useRouteError, Navigate } from 'react-router-dom';
 import { HelmetProvider, Helmet } from 'react-helmet-async';
 import { ThemeProvider, CssBaseline, Grid2 as Grid } from '@mui/material';
 import Navbar from './Navbar.js';
@@ -33,12 +33,29 @@ export function lazyLoad({ remoteName, remoteUrl, scope = remoteName, module: ex
         element.onerror = () => reject(new Error(`Failed to load remote entry: ${remoteUrl}`));
         document.head.appendChild(element);
 
+        function waitForContainer(timeout = 2000) {
+          const start = Date.now();
+          return new Promise((res, rej) => {
+            const check = () => {
+              const container = window[scope];
+              if (container) return res(container);
+              if (Date.now() - start > timeout) {
+                return rej(new Error(`Container ${scope} not found`));
+              }
+              setTimeout(check, 50);
+            };
+            check();
+          });
+        }
+
         function loadRemoteModule() {
           Promise.resolve(__webpack_init_sharing__('default'))
-            .then(() => {
-              const container = window[scope];
+            .then(() => waitForContainer())
+            .then((container) => {
               // Initialize shared scope
-              container.init(__webpack_share_scopes__.default);
+              return Promise.resolve(container.init(__webpack_share_scopes__.default)).then(() => container);
+            })
+            .then((container) => {
               // Get module factory
               return container.get(exposedModule);
             })
@@ -136,6 +153,12 @@ export default function App() {
 
     // Top-level route for this page
     dynamicRoutes.push(createRoute({ path: pagePath, moduleKey: exposedModule, pageTitle: title }));
+    // Also handle /home route for the home page
+    if (pagePath === '/') {
+      dynamicRoutes.push(
+        createRoute({ path: '/home', moduleKey: exposedModule, pageTitle: title })
+      );
+    }
     // Child routes if any
     if (Array.isArray(children)) {
       children.forEach(child => {
