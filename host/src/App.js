@@ -1,5 +1,5 @@
 import React, { Suspense, useState, useEffect } from 'react';
-import { createBrowserRouter, RouterProvider, Outlet, useRouteError, Navigate } from 'react-router-dom';
+import { createBrowserRouter, RouterProvider, Outlet, useRouteError } from 'react-router-dom';
 import { HelmetProvider, Helmet } from 'react-helmet-async';
 import { ThemeProvider, CssBaseline, Grid2 as Grid } from '@mui/material';
 import Navbar from './Navbar.js';
@@ -8,13 +8,12 @@ import theme from './theme.js';
 import { ThemeContext } from './ThemeContext.js';
 import { MsalProvider } from '@azure/msal-react';
 import { msalInstance } from './msalConfig.js';
-import { useEnvStore, withRemotesPath } from '@anthonyv449/ui-kit';
-import { useGlobalData } from '@anthonyv449/ui-kit';
+import { useEnvStore, withRemotesPath, useGlobalData } from '@anthonyv449/ui-kit';
 
 const executedLoaders = new Set();
+
 /**
  * Generic lazy loader for Module Federation remotes
- * @param {{remoteName: string, remoteUrl: string, scope?: string, module: string}} options
  */
 export function lazyLoad({ remoteName, remoteUrl, scope = remoteName, module: exposedModule }) {
   return React.lazy(
@@ -51,17 +50,12 @@ export function lazyLoad({ remoteName, remoteUrl, scope = remoteName, module: ex
         function loadRemoteModule() {
           Promise.resolve(__webpack_init_sharing__('default'))
             .then(() => waitForContainer())
-            .then((container) => {
-              // Initialize shared scope
-              return Promise.resolve(container.init(__webpack_share_scopes__.default)).then(() => container);
-            })
-            .then((container) => {
-              // Get module factory
-              return container.get(exposedModule);
-            })
+            .then((container) =>
+              Promise.resolve(container.init(__webpack_share_scopes__.default)).then(() => container)
+            )
+            .then((container) => container.get(exposedModule))
             .then((factory) => {
               const Module = factory();
-              // Run loader hook once
               if (typeof Module.loader === 'function' && !executedLoaders.has(exposedModule)) {
                 return Promise.resolve(Module.loader()).then(() => {
                   executedLoaders.add(exposedModule);
@@ -77,6 +71,32 @@ export function lazyLoad({ remoteName, remoteUrl, scope = remoteName, module: ex
   );
 }
 
+/**
+ * Fetches Last-Modified header and returns a Date
+ */
+async function fetchLastModified(url) {
+  const res = await fetch(url, { method: 'HEAD', mode: 'cors' });
+  if (!res.ok) {
+    throw new Error(`HEAD ${url} → ${res.status}`);
+  }
+  const header = res.headers.get('Last-Modified') ?? "2025";
+  return new Date(header);
+}
+
+/**
+ * Determine most recently modified remoteEntry
+ */
+async function getMostRecentRemote(remotes, isDev) {
+  const urls = remotes.map((r) =>
+    isDev
+      ? `http://localhost:${r.port}/remoteEntry.js`
+      : withRemotesPath(`${r.name.toLowerCase()}/latest/remoteEntry.js`)
+  );
+  const entries = await Promise.all(
+    urls.map(async (url) => ({ url, date: await fetchLastModified(url) }))
+  );
+  return entries.reduce((prev, curr) => (curr.date > prev.date ? curr : prev));
+}
 
 function RouteError() {
   const error = useRouteError();
@@ -90,14 +110,15 @@ function RouteError() {
 }
 
 export default function App() {
-  
   const [content, setContent] = useState(null);
   const [remotes, setRemotes] = useState(null);
-  const { loaded, loadEnv, apiPath, hostPath } = useEnvStore();
+  const [hasLatest, setHasLatest] = useState(false);
+  const [latestDate, setLatestDate]= useState(null);
+  const { loaded, loadEnv, apiPath } = useEnvStore();
   const { loadUser } = useGlobalData();
   const isDev = process.env.NODE_ENV === 'development';
 
-  // Load environment and user data
+  // Load environment, then user
   useEffect(() => { loadEnv(); }, [loadEnv]);
   useEffect(() => { if (apiPath) loadUser(); }, [apiPath, loadUser]);
 
@@ -105,69 +126,74 @@ export default function App() {
   useEffect(() => {
     if (!loaded) return;
     Promise.all([
-      fetch(`/content.json`).then(res => res.json()),
-      fetch(`/remotes.json`).then(res => res.json()),
+      fetch('/content.json').then((r) => r.json()),
+      fetch('/remotes.json').then((r) => r.json()),
     ])
-      .then(([contentData, remotesData]) => {
-        console.log(contentData)
-        setContent(contentData);
-        setRemotes(remotesData);
+      .then(([c, r]) => {
+        setContent(c);
+        setRemotes(r);
       })
-      .catch(error => console.error('Data fetch error:', error));
-  }, [loaded, hostPath]);
+      .catch((e) => console.error('Data fetch error:', e));
+  }, [loaded]);
 
-  if (!content || !remotes) return <div>Loading...</div>;
+  // After remotes loaded, get latest modified date
+  useEffect(() => {
+    if (!remotes) return;
+    async function updateLatest() {
+      try {
+        const { date } = await getMostRecentRemote(remotes, isDev);
+        setLatestDate(date);
+        setHasLatest(true);
+      } catch (e) {
+        console.error('Error fetching latest remote modified date:', e);
+      }
+    }
+    updateLatest();
+  }, [remotes, isDev]);
 
-  // Build dynamic route entries based on content.pages
+  // Delay render until all data is ready
+  if (!content || !remotes || !hasLatest) {
+    return <div>Loading...</div>;
+  }
+
+  // Build dynamic routes
   const dynamicRoutes = [];
-
-  content.pages.forEach(page => {
+  content.pages.forEach((page) => {
     const { id, path: pagePath, title, exposedModule, children } = page;
-    const remoteConfig = remotes.find(r => r.name.toLowerCase() === id.toLowerCase());
-    if (!remoteConfig) return;
-
-    const { name: remoteName, port } = remoteConfig;
-
-    // Determine remote entry URL depending on environment
+    const remoteCfg = remotes.find((r) => r.name.toLowerCase() === id.toLowerCase());
+    if (!remoteCfg) return;
+    const { name, port } = remoteCfg;
     const localUrl = `http://localhost:${port}/remoteEntry.js`;
-    const prodPath = `${remoteName.toLowerCase()}/latest/remoteEntry.js`;
-    const remoteEntryUrl = isDev
-      ? localUrl
-      : withRemotesPath(prodPath);
+    const prodUrl = withRemotesPath(`${name.toLowerCase()}/latest/remoteEntry.js`);
+    const remoteEntryUrl = isDev ? localUrl : prodUrl;
 
     const createRoute = ({ path, moduleKey, pageTitle }) => {
       const trimmed = path.replace(/^\//, '');
-      const RemoteComponent = lazyLoad({ remoteName, remoteUrl: remoteEntryUrl, scope: remoteName, module: moduleKey });
+      const Component = lazyLoad({ remoteName: name, remoteUrl: remoteEntryUrl, module: moduleKey });
       const element = (
         <>
           <Helmet><title>{pageTitle}</title></Helmet>
-          <Suspense fallback={<div>Loading {remoteName}...</div>}>
-            <RemoteComponent />
+          <Suspense fallback={<div>Loading {name}...</div>}>
+            <Component />
           </Suspense>
         </>
       );
       return trimmed === ''
-        ? { index: true, element, errorElement: <RouteError /> } //this is for home 
+        ? { index: true, element, errorElement: <RouteError /> }
         : { path: trimmed, element, errorElement: <RouteError /> };
     };
 
-    // Top-level route for this page
     dynamicRoutes.push(createRoute({ path: pagePath, moduleKey: exposedModule, pageTitle: title }));
-    // Also handle /home route for the home page
     if (pagePath === '/') {
-      dynamicRoutes.push(
-        createRoute({ path: '/home', moduleKey: exposedModule, pageTitle: title })
-      );
+      dynamicRoutes.push(createRoute({ path: '/home', moduleKey: exposedModule, pageTitle: title }));
     }
-    // Child routes if any
     if (Array.isArray(children)) {
-      children.forEach(child => {
+      children.forEach((child) => {
         dynamicRoutes.push(createRoute({ path: child.path, moduleKey: child.exposedModule, pageTitle: child.title }));
       });
     }
   });
 
-  // Configure router with layout
   const router = createBrowserRouter([
     {
       path: '/',
@@ -177,12 +203,11 @@ export default function App() {
           <Grid container direction="column" sx={{ minHeight: '100vh' }}>
             <Grid component="header" size="auto"><Navbar pages={content.pages} remotes={remotes} /></Grid>
             <Grid component="main" size="grow"><Suspense fallback={<div>Loading...</div>}><Outlet /></Suspense></Grid>
-            <Grid component="footer" size="auto"><Footer /></Grid>
+            <Grid component="footer" size="auto"><Footer latestDate={latestDate}/></Grid>
           </Grid>
         </HelmetProvider>
       ),
-      errorElement: <RouteError />, 
-      children: dynamicRoutes,
+      errorElement: <RouteError />, children: dynamicRoutes,
     },
   ]);
 
