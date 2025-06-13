@@ -36,7 +36,6 @@ const Home = () => {
     />
   ));
 
-  // Combine MeSection and all card components into a single array
   const componentsArray = [
     meSectionComponent,
     cardComponents.length < 1 ? <ComingSoon /> : cardComponents,

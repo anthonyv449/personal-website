@@ -11,7 +11,6 @@ import { useNavigate } from "react-router-dom";
 import { ComingSoon } from "@anthonyv449/ui-kit";
 
 export const loader = async () => {
-  //add in API calls here from store
   const { loadArticles } = useArticleStore.getState();
   return loadArticles();
 };
