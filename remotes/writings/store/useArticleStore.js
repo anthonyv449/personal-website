@@ -27,4 +27,22 @@ export const useArticleStore = create((set, get) => ({
   getArticleBySlug: (slug) => {
     return get().articles.find((article) => article.slug === slug);
   },
+
+  createArticle: async (article) => {
+    const { apiPath } = useEnvStore.getState();
+    if (!apiPath) return;
+    const res = await fetch(withApiPath('/articles'), {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(article),
+    });
+    if (!res.ok) return;
+    let saved;
+    try {
+      saved = await res.json();
+    } catch (e) {
+      saved = article;
+    }
+    set((state) => ({ articles: [...state.articles, saved] }));
+  },
 }));

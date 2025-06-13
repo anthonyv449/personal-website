@@ -35,3 +35,33 @@ test('loadArticle loads current article', async () => {
   expect(article.slug).toBe('one');
   expect(article.articleText).toBe('text');
 });
+
+test('createArticle posts article', async () => {
+  global.fetch = jest.fn(() =>
+    Promise.resolve({
+      ok: true,
+      json: () =>
+        Promise.resolve({
+          title: 'My First Article',
+          content: 'Hello world',
+          author: 'codex',
+          slug: 'test',
+        }),
+    })
+  );
+  const article = {
+    title: 'My First Article',
+    content: 'Hello world',
+    author: 'codex',
+    slug: 'test',
+  };
+  await act(async () => {
+    await useArticleStore.getState().createArticle(article);
+  });
+  expect(global.fetch).toHaveBeenCalledWith(
+    expect.stringContaining('/articles'),
+    expect.objectContaining({ method: 'POST' })
+  );
+  const articles = useArticleStore.getState().articles;
+  expect(articles[articles.length - 1].slug).toBe('test');
+});
