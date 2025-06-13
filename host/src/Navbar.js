@@ -53,6 +53,7 @@ const Navbar = ({ pages }) => {
       alignItems="center"
       justifyContent="space-between"
       borderBottom={`0.025rem solid ${theme.palette.primary.main}`}
+      marginBottom="1rem"
     >
       <Grid>
         <Logo
@@ -60,7 +61,7 @@ const Navbar = ({ pages }) => {
             width: "5rem",
             height: "5rem",
             fill: theme.palette.primary.main,
-            stroke: theme.palette.primary.main,
+            stroke: theme.palette.primary.contrastText,
           }}
         />
       </Grid>
@@ -77,8 +78,8 @@ const Navbar = ({ pages }) => {
               borderRadius: "0.4rem",
               padding: ".125rem .5rem",
               "&.active": {
-                color: "#eeeeee",
-                backgroundColor: "#222222",
+                color: `${theme.palette.primary.hoverText}`,
+                backgroundColor: `${theme.palette.greys.default}`,
               },
             }}
           >

@@ -40,9 +40,11 @@ const Writings = () => {
 
   return (
     <>
+    <Grid offset={{ md: 10 }}>
       <Button variant="contained" onClick={() => setOpen(true)} sx={{ mb: 2 }}>
         Add writing
       </Button>
+      </Grid>
       <Dialog open={open} onClose={() => setOpen(false)}>
         <DialogTitle>Add Writing</DialogTitle>
         <DialogContent>
@@ -74,6 +76,7 @@ const Writings = () => {
             margin="dense"
             fullWidth
             multiline
+            minRows={5}
             label="Content"
             name="content"
             value={form.content}
@@ -107,7 +110,7 @@ const Writings = () => {
           <ComingSoon />
         )}
       </Grid>
-    </>
+      </>
   );
 };
 

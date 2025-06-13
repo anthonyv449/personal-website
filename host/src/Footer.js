@@ -1,17 +1,18 @@
 import React from "react";
-import { Box, Typography, Grid2 as Grid } from "@mui/material";
- 
+import { Box, Typography, Grid2 as Grid, useTheme } from "@mui/material";
+
 
 const Footer = ({latestDate}) => {
+  const theme = useTheme();
   return (
     <Box
       component="footer"
       sx={{
-        borderTop: "2px solid #b4b4b4",
+        borderTop: `2px solid ${theme.palette.primary.main}`,
         padding: "1rem",
         marginTop: "2rem",
-        backgroundColor: "#111210",
-        color: "#b4b4b4",
+        backgroundColor: `${theme.palette.background.default}`,
+        color: `${theme.palette.primary.textColor}`,
       }}
     >
       <Grid container justifyContent="space-between" alignItems="center">
