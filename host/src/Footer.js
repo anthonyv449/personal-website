@@ -1,9 +1,8 @@
 import React from "react";
 import { Box, Typography, Grid2 as Grid } from "@mui/material";
+ 
 
-const Footer = () => {
-  const latestReleaseDate = "March 25, 2025"; // You can dynamically update this later
-
+const Footer = ({latestDate}) => {
   return (
     <Box
       component="footer"
@@ -18,7 +17,7 @@ const Footer = () => {
       <Grid container justifyContent="space-between" alignItems="center">
         <Grid>
           <Typography variant="body2">
-            Latest Release: {latestReleaseDate}
+            Latest Release: {latestDate.toLocaleDateString("en-US")}
           </Typography>
         </Grid>
       </Grid>
