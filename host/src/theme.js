@@ -90,6 +90,7 @@ const theme = createTheme({
       styleOverrides: {
         root: {
           color: customColors.mainTextColor,
+          background: customColors.mainBackgroundColor,
           "&:hover": {
             color: customColors.hoverText,
             background: customColors.hoverBackground,
