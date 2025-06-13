@@ -7,7 +7,7 @@ export const useArticleStore = create((set, get) => ({
 
   loadArticles: async () => {
     const url = withApiPath("/articles", "/articles/articles.json");
-    const res = await fetch(url);
+    const res = await fetch(url,{credentials: "include"});
     if (!res.ok) return;
     const data = await res.json();
     set({ articles: data });
@@ -16,7 +16,7 @@ export const useArticleStore = create((set, get) => ({
   loadArticle: async (currentSlug) => {
     const { apiPath } = useEnvStore.getState();
     if (apiPath) {
-      const res = await fetch(withApiPath(`/articles/${currentSlug}`));
+    const res = await fetch(withApiPath(`/articles/${currentSlug}`),{credentials: "include"});
       if (!res.ok) return;
       const article = await res.json();
       set({ currentArticle: article });
