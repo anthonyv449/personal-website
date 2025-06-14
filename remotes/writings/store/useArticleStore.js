@@ -35,6 +35,7 @@ export const useArticleStore = create((set, get) => ({
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(article),
+      credentials: "include"
     });
     if (!res.ok) return;
     let saved;
