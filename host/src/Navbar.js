@@ -12,38 +12,37 @@ import { useGlobalData, withApiPath } from "@anthonyv449/ui-kit";
 
 const Navbar = ({ pages }) => {
   const theme = useTheme();
-  const { instance, accounts } = useMsal();
+  const { instance } = useMsal();
   const { user, setUser, logoutUser } = useGlobalData();
   
   const handleLogin = async () => {
-     await instance.loginPopup({
+  try {
+    const loginResponse = await instance.loginPopup({
       scopes: ["openid", "profile", "email"]
-    }).then((loginResponse)=>
-    { 
-      var idToken = loginResponse.idToken;
-      fetch(withApiPath("/auth/microsoft"), {
-        method: "POST",
-        credentials: "include",
-        headers: {"Content-Type":"application/json"},
-        body: JSON.stringify({ idToken })
-      });
-    }
-    ).catch((err) => {
-        console.error("Login failed", err);
-      });
-  };
+    });
+
+    const idToken = loginResponse.idToken;
+
+    const response = await fetch(withApiPath("/auth/microsoft"), {
+      method: "POST",
+      credentials: "include",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ idToken })
+    });
+
+    const user = await response.json();
+    setUser(user);
+  } catch (err) {
+    console.error("Login failed", err);
+  }
+};
+
 
   const handleLogout = async () => {
     await logoutUser();
     instance.logoutPopup();
   };
 
-  useEffect(() => {
-    const current = accounts.length > 0 ? accounts[0] : null;
-    if (user !== current) {
-      setUser(current);
-    }
-  }, [accounts, user, setUser]);
 
   return (
     <Grid
