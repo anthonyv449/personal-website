@@ -16,7 +16,7 @@ export const loader = async () => {
   if (articles.length < 1) {
     await articleStore.loadArticle(slug);
   } else {
-    await articleStore.getArticleBySlug(slug);
+    await articleStore.getCurrentArticleBySlug(slug);
   }
 };
 
