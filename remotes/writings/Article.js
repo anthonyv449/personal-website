@@ -8,8 +8,17 @@ import { Spinner } from "@anthonyv449/ui-kit";
 export const loader = async () => {
   //add in API calls here from store
   const articleStore = useArticleStore.getState();
-  await articleStore.loadArticles();
-  };
+  const { articles } = articleStore;
+  const pathname = window.location.href;
+  const url = new URL(pathname);
+  const pathSegments = url.pathname.split("/").filter(Boolean);
+  const slug = pathSegments.at(-1);
+  if (articles.length < 1) {
+    await articleStore.loadArticle(slug);
+  } else {
+    await articleStore.getArticleBySlug(slug);
+  }
+};
 
 const Article = () => {
   const [markdown, setMarkdown] = useState("");
@@ -19,53 +28,51 @@ const Article = () => {
   if (!article) return <Spinner />;
 
   useEffect(() => {
-    if (article?.articleText) {
-      setMarkdown(article.articleText);
+    if (article?.Content) {
+      setMarkdown(article.Content);
     }
   }, [article]);
 
   return (
     <Box padding={4}>
       <Typography variant="h3" gutterBottom>
-        {article.title}
+        {article.Title}
       </Typography>
       <ReactMarkdown
-  components={{
-    h1: ({ node, ...props }) => (
+        components={{
+          h1: ({ node, ...props }) => (
             <Typography variant="h4" gutterBottom {...props} />
           ),
-    h2: ({ node, ...props }) => (
-      <Typography variant="h5" gutterBottom {...props} />
-    ),
-    h3: ({ node, ...props }) => (
-      <Typography variant="h6" gutterBottom {...props} />
-    ),
-    p: ({ node, ...props }) => (
-      <Typography variant="body1"  {...props} />
-    ),
-    ul: ({ node, ...props }) => (
-      <Box component="ul" sx={{ pl: 4, m: 0 }} {...props} />
-    ),
-    li: ({ node, ...props }) => (
-      <Typography
-        component="li"
-        variant="body1"
-        sx={{
-          listStyleType: "disc",
-          pl: 2,
-          mb: 1,
+          h2: ({ node, ...props }) => (
+            <Typography variant="h5" gutterBottom {...props} />
+          ),
+          h3: ({ node, ...props }) => (
+            <Typography variant="h6" gutterBottom {...props} />
+          ),
+          p: ({ node, ...props }) => <Typography variant="body1" {...props} />,
+          ul: ({ node, ...props }) => (
+            <Box component="ul" sx={{ pl: 4, m: 0 }} {...props} />
+          ),
+          li: ({ node, ...props }) => (
+            <Typography
+              component="li"
+              variant="body1"
+              sx={{
+                listStyleType: "disc",
+                pl: 2,
+                mb: 1,
+              }}
+              {...props}
+            />
+          ),
+          strong: ({ node, ...props }) => (
+            <Typography
+              component="span"
+              sx={{ fontWeight: "bold", display: "inline" }}
+              {...props}
+            />
+          ),
         }}
-        {...props}
-      />
-    ),
-    strong: ({ node, ...props }) => (
-      <Typography
-        component="span"
-        sx={{ fontWeight: "bold", display: "inline" }}
-        {...props}
-      />
-    ),
-  }}
       >
         {markdown}
       </ReactMarkdown>

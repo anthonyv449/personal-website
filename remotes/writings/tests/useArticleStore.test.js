@@ -1,5 +1,6 @@
 import { act } from 'react';
 import { useArticleStore } from '../store/useArticleStore';
+import { useEnvStore } from '../../../ui-kit/hooks/useEnv';
 
 beforeEach(() => {
   global.fetch = jest.fn((url) => {
@@ -11,12 +12,28 @@ beforeEach(() => {
         ]),
       });
     }
+    if (url.includes('/articles/') ) {
+      return Promise.resolve({
+        ok: true,
+        json: () => Promise.resolve({ slug: 'one', articleText: 'text' }),
+      });
+    }
+    if (url.includes('/articles')) {
+      return Promise.resolve({
+        ok: true,
+        json: () => Promise.resolve([
+          { slug: 'one', title: 't', summary: 's', file: '/file.md' },
+        ]),
+      });
+    }
     return Promise.resolve({ ok: true, text: () => Promise.resolve('text') });
   });
+  useEnvStore.setState({ apiPath: "https://api.test.com" });
 });
 
 afterEach(() => {
   jest.resetAllMocks();
+  useEnvStore.setState({ apiPath: null });
 });
 
 test('loadArticles stores articles', async () => {
