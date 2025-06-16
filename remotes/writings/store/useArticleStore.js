@@ -27,7 +27,7 @@ export const useArticleStore = create((set, get) => ({
   },
 
   getArticleBySlug: (slug) => {
-    return get().articles.find((article) => article.slug === slug);
+    return get().articles.find((article) => article.Slug === slug);
   },
 
   createArticle: async (article) => {
