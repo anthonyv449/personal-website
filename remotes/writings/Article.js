@@ -13,11 +13,13 @@ export const loader = async () => {
   const url = new URL(pathname);
   const pathSegments = url.pathname.split("/").filter(Boolean);
   const slug = pathSegments.at(-1);
+  let article;
   if (articles.length < 1) {
-    await articleStore.loadArticle(slug);
+    article = await articleStore.loadArticle(slug);
   } else {
-    await articleStore.getCurrentArticleBySlug(slug);
+    article = await articleStore.setCurrentArticleBySlug(slug);
   }
+   await articleStore.postArticleView(article);
 };
 
 const Article = () => {
