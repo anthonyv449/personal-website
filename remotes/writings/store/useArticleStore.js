@@ -55,7 +55,7 @@ export const useArticleStore = create((set, get) => ({
   postArticleView: async (article) => {
     const { apiPath } = useEnvStore.getState();
     if (!apiPath) return;
-    const {Id} = useGlobalData.getState().user ?? -1;
+    const {Id} = useGlobalData.getState().user ?? 0;
     const res = await fetch(withApiPath(`/articles/viewed`), {
       method: "POST",
       credentials: "include",
