@@ -59,7 +59,7 @@ export const useArticleStore = create((set, get) => ({
     const res = await fetch(withApiPath(`/articles/viewed`), {
       method: "POST",
       credentials: "include",
-      body: JSON.stringify({ ArticleId: article.ArticleId, ViewerId: Id, ViewedAt: new Date().toISOString() }),
+      body: JSON.stringify({ ArticleId: article.ArticleId, ViewerId: Id.toString(), ViewedAt: new Date().toISOString() }),
     });
     if (!res.ok){
       console.error("Failed to post article view");
