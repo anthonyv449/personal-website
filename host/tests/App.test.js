@@ -14,7 +14,10 @@ beforeEach(() => {
       return Promise.resolve({ ok: true, json: () => Promise.resolve({ pages: [] }) });
     }
     if (url === '/remotes.json') {
-      return Promise.resolve({ ok: true, json: () => Promise.resolve([]) });
+      return Promise.resolve({ ok: true, json: () => Promise.resolve([{ name: 'home', port: 3001 }]) });
+    }
+    if (url.includes('remoteEntry.js')) {
+      return Promise.resolve({ ok: true, headers: { get: () => 'Wed, 21 Oct 2015 07:28:00 GMT' } });
     }
     return Promise.resolve({ ok: true, json: () => Promise.resolve({}) });
   });
@@ -22,6 +25,7 @@ beforeEach(() => {
 
 afterEach(() => {
   jest.resetAllMocks();
+  delete global.fetch;
 });
 
 test('renders loading initially then shows navbar', async () => {
