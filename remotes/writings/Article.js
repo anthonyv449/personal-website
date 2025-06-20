@@ -8,16 +8,19 @@ import { Spinner } from "@anthonyv449/ui-kit";
 export const loader = async () => {
   //add in API calls here from store
   const articleStore = useArticleStore.getState();
-  const { articles } = articleStore;
+  const { currentArticle } = articleStore;
   const pathname = window.location.href;
   const url = new URL(pathname);
   const pathSegments = url.pathname.split("/").filter(Boolean);
   const slug = pathSegments.at(-1);
-  if (articles.length < 1) {
-    await articleStore.loadArticle(slug);
+  let article;
+  if (currentArticle == null) {
+    article = await articleStore.loadArticle(slug);
   } else {
-    await articleStore.getArticleBySlug(slug);
+    article = currentArticle;
   }
+
+  await articleStore.postArticleView(article);
 };
 
 const Article = () => {
