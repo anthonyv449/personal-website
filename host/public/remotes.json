@@ -2,31 +2,16 @@
   {
     "name": "Home",
     "port": 3001,
-    "folder": "./remotes/home/",
-    "entry": "./remotes/home/index.js",
-    "exposes": {
-      "Home": "./remotes/home/index.js"
-    }
+    "remoteEntry": "remoteEntry.js"
   },
   {
     "name": "Resume",
     "port": 3002,
-    "folder": "./remotes/resume/",
-    "entry": "./remotes/resume/index.js",
-    "exposes": {
-      "Resume": "./remotes/resume/index.js"
-    }
+    "remoteEntry": "remoteEntry.js"
   },
   {
     "name": "Writings",
     "port": 3003,
-    "folder": "./remotes/writings/",
-    "entry": "./remotes/writings/index.js",
-    "children": [{ "title": "Article" }],
-    "exposes": {
-      "Writings": "./remotes/writings/index.js",
-      "Article": "./remotes/writings/Article.js"
-    }
+    "remoteEntry": "remoteEntry.js"
   }
-
 ]

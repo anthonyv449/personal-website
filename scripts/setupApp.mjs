@@ -137,8 +137,8 @@ function createHostConfig(remotesMap) {
 
 function createRemoteConfig(remote) {
   try {
-    // Assume remote.folder is provided in the remotes.json file to locate its package.json.
-    const remoteDeps = require(`../${remote.folder}/package.json`).dependencies;
+    const folder = `remotes/${remote.name.toLowerCase()}`;
+    const remoteDeps = require(`../${folder}/package.json`).dependencies;
     // Get the host's shared configuration to be used in remotes.
     const hostDeps = require("../package.json").dependencies;
     const hostShared = generateShared(hostDeps);
@@ -148,7 +148,7 @@ function createRemoteConfig(remote) {
 
     return {
       mode: "development",
-      entry: remote.entry,
+      entry: `./${folder}/index.js`,
       devServer: {
         port: remote.port,
         open: false,
@@ -199,7 +199,7 @@ function createRemoteConfig(remote) {
         new ModuleFederationPlugin({
           name: remote.name,
           filename: "remoteEntry.js",
-          exposes: remote.exposes,
+          exposes: generateExposeEntries(`./${folder}`),
           shared,
         }),
       ],
@@ -231,7 +231,7 @@ async function startHost(selectedRemotes) {
   selectedRemotes.forEach((remote) => {
     remotesMap[
       remote.name
-    ] = `${remote.name}@http://localhost:${remote.port}/remoteEntry.js`;
+    ] = `${remote.name}@http://localhost:${remote.port}/${remote.remoteEntry}`;
   });
 
   const hostConfig = createHostConfig(remotesMap);

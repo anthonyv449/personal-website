@@ -7,6 +7,19 @@ import ModuleFederationPlugin from "webpack/lib/container/ModuleFederationPlugin
 
 const require = createRequire(import.meta.url);
 
+function generateExposeEntries(folderPath, exposePrefix = "./") {
+  const files = require("fs").readdirSync(folderPath);
+  const exposes = {};
+  for (const file of files) {
+    const ext = path.extname(file);
+    const base = path.basename(file, ext);
+    if (ext === ".js" || ext === ".jsx") {
+      exposes[`${exposePrefix}${base}`] = `${folderPath}/${file}`;
+    }
+  }
+  return exposes;
+}
+
 async function loadRemotes() {
   const file = path.resolve(process.cwd(), "host/public/remotes.json");
   const json = await fs.readFile(file, "utf-8");
@@ -37,9 +50,10 @@ function mergeShared(hostShared) {
 }
 
 function createRemoteConfig(remote, hostShared, version) {
+  const folder = `remotes/${remote.name.toLowerCase()}`;
   return {
     mode: "production",
-    entry: path.resolve(process.cwd(), remote.entry),
+    entry: path.resolve(process.cwd(), folder, 'index.js'),
     output: {
       path: path.resolve(process.cwd(), "dist", remote.name, version),
       filename: "bundle.js",
@@ -76,7 +90,7 @@ function createRemoteConfig(remote, hostShared, version) {
       new ModuleFederationPlugin({
         name: remote.name,
         filename: "remoteEntry.js",
-        exposes: remote.exposes,
+        exposes: generateExposeEntries(path.resolve(process.cwd(), folder)),
         shared: mergeShared(hostShared),
       }),
     ],
@@ -157,14 +171,15 @@ async function buildAll() {
 
   const remotesMap = {};
   for (const r of remotes) {
-    const pkg = require(path.resolve(process.cwd(), r.folder, 'package.json'));
+    const folder = `remotes/${r.name.toLowerCase()}`;
+    const pkg = require(path.resolve(process.cwd(), folder, 'package.json'));
     const version = pkg.version;
     await runWebpack(createRemoteConfig(r, hostShared, version), `${r.name} v${version}`);
     const versionPath = path.resolve(process.cwd(), 'dist', r.name, version);
     const latestPath = path.resolve(process.cwd(), 'dist', r.name, 'latest');
     await fs.rm(latestPath, { recursive: true, force: true });
     await fs.cp(versionPath, latestPath, { recursive: true });
-    remotesMap[r.name] = `${r.name}@/remotes/${r.name.toLowerCase()}/latest/remoteEntry.js`;
+    remotesMap[r.name] = `${r.name}@/remotes/${r.name.toLowerCase()}/latest/${r.remoteEntry}`;
   }
 
   await runWebpack(createHostConfig(remotesMap, hostShared), "host");

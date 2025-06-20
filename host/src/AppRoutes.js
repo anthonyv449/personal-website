@@ -20,18 +20,8 @@ function loadRemoteEntry(remoteTitle, remoteUrl) {
 }
 
 const findRemotePort = (rem, remotesList) => {
-  for (const remote of remotesList) {
-    if (remote.name === rem.title) {
-      return remote.port;
-    }
-    if (Array.isArray(remote.children)) {
-      const childMatch = remote.children.find(
-        (child) => child.title === rem.title
-      );
-      if (childMatch) return remote.port;
-    }
-  }
-  return null;
+  const match = remotesList.find((remote) => remote.name === rem.title);
+  return match ? match.port : null;
 };
 
 const RemoteRoute = ({ remote, remotesList }) => {
@@ -45,19 +35,15 @@ const RemoteRoute = ({ remote, remotesList }) => {
 
       (async () => {
         try {
-          const remoteConfig = remotesList.find(
-            (r) =>
-              r.name === remote.title ||
-              (r.children || []).some((c) => c.title === remote.title)
-          );
+          const remoteConfig = remotesList.find((r) => r.name === remote.title);
 
           if (!remoteConfig) {
             throw new Error(`Remote config not found for ${remote.title}`);
           }
 
           const remoteUrl = isDev
-            ? `http://localhost:${port}/remoteEntry.js`
-            : withRemotesPath(`${remoteConfig.name.toLowerCase()}/latest/remoteEntry.js`);
+            ? `http://localhost:${port}/${remoteConfig.remoteEntry}`
+            : withRemotesPath(`${remoteConfig.name.toLowerCase()}/latest/${remoteConfig.remoteEntry}`);
 
           await loadRemoteEntry(remote.title, remoteUrl);
           await __webpack_init_sharing__("default");
