@@ -14,7 +14,7 @@ beforeEach(() => {
       return Promise.resolve({ ok: true, json: () => Promise.resolve({ pages: [] }) });
     }
     if (url === '/remotes.json') {
-      return Promise.resolve({ ok: true, json: () => Promise.resolve([{ name: 'home', port: 3001 }]) });
+      return Promise.resolve({ ok: true, json: () => Promise.resolve([{ name: 'home', port: 3001, remoteEntry: 'remoteEntry.js' }]) });
     }
     if (url.includes('remoteEntry.js')) {
       return Promise.resolve({ ok: true, headers: { get: () => 'Wed, 21 Oct 2015 07:28:00 GMT' } });

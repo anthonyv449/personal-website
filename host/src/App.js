@@ -89,8 +89,8 @@ async function fetchLastModified(url) {
 async function getMostRecentRemote(remotes, isDev) {
   const urls = remotes.map((r) =>
     isDev
-      ? `http://localhost:${r.port}/remoteEntry.js`
-      : withRemotesPath(`${r.name.toLowerCase()}/latest/remoteEntry.js`)
+      ? `http://localhost:${r.port}/${r.remoteEntry}`
+      : withRemotesPath(`${r.name.toLowerCase()}/latest/${r.remoteEntry}`)
   );
   const entries = await Promise.all(
     urls.map(async (url) => ({ url, date: await fetchLastModified(url) }))
@@ -162,9 +162,9 @@ export default function App() {
     const { id, path: pagePath, title, exposedModule, children } = page;
     const remoteCfg = remotes.find((r) => r.name.toLowerCase() === id.toLowerCase());
     if (!remoteCfg) return;
-    const { name, port } = remoteCfg;
-    const localUrl = `http://localhost:${port}/remoteEntry.js`;
-    const prodUrl = withRemotesPath(`${name.toLowerCase()}/latest/remoteEntry.js`);
+    const { name, port, remoteEntry } = remoteCfg;
+    const localUrl = `http://localhost:${port}/${remoteEntry}`;
+    const prodUrl = withRemotesPath(`${name.toLowerCase()}/latest/${remoteEntry}`);
     const remoteEntryUrl = isDev ? localUrl : prodUrl;
 
     const createRoute = ({ path, moduleKey, pageTitle }) => {
