@@ -22,7 +22,8 @@ export const loader = async () => {
 };
 const Writings = () => {
   const navigate = useNavigate();
-  const { articles, createArticle } = useArticleStore();
+  const { articles, createArticle, setCurrentArticleBySlug } =
+    useArticleStore();
   const [open, setOpen] = useState(false);
   const [form, setForm] = useState({
     title: "",
@@ -107,22 +108,29 @@ const Writings = () => {
             <Grid key={article.Slug}>
               <Card>
                 <CardActionArea
-                  onClick={() => navigate(`/writings/${article.Slug}`)}
-                  sx={{backgroundColor: "#9c27b0", ":hover": { backgroundColor: "#7b1fa2" }}}
+                  onClick={() => {
+                    navigate(`/writings/${article.Slug}`);
+                    setCurrentArticleBySlug(article.Slug);
+                  }}
+                  sx={{
+                    backgroundColor: "#9c27b0",
+                    ":hover": { backgroundColor: "#7b1fa2" },
+                  }}
                 >
                   <CardContent>
-                    <Typography variant="h6" color="white" >
+                    <Typography variant="h6" color="white">
                       {article.Title}
                     </Typography>
-                    <Typography variant="body2" color="white">{article.Author}</Typography>
+                    <Typography variant="body2" color="white">
+                      {article.Author}
+                    </Typography>
                   </CardContent>
                 </CardActionArea>
-               <CardContent sx={{ backgroundColor: "#f3e5f5" }}>
+                <CardContent sx={{ backgroundColor: "#f3e5f5" }}>
                   <Typography variant="body2" color="black">
                     {article.Content.slice(0, 100)}...
                   </Typography>
                 </CardContent>
-
               </Card>
             </Grid>
           ))

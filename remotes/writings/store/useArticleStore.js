@@ -28,8 +28,10 @@ export const useArticleStore = create((set, get) => ({
   },
 
   setCurrentArticleBySlug: (slug) => {
-    const currentArticle = get().articles.find((article) => article.Slug === slug);
-    set({currentArticle})
+    const currentArticle = get().articles.find(
+      (article) => article.Slug === slug
+    );
+    set({ currentArticle });
     return currentArticle;
   },
 
@@ -55,15 +57,21 @@ export const useArticleStore = create((set, get) => ({
   postArticleView: async (article) => {
     const { apiPath } = useEnvStore.getState();
     if (!apiPath) return;
-    const {Id} = useGlobalData.getState().user ?? 0;
+    const { user } = useGlobalData.getState();
+    const userId = user?.Id ?? 0;
+    console.log(article);
     const res = await fetch(withApiPath(`/articles/viewed`), {
       method: "POST",
       credentials: "include",
-      body: JSON.stringify({ ArticleId: article.ArticleId, ViewerId: Id.toString(), ViewedAt: new Date().toISOString() }),
+      body: JSON.stringify({
+        ArticleId: article.ArticleId,
+        ViewerId: userId.toString(),
+        ViewedAt: new Date().toISOString(),
+      }),
     });
-    if (!res.ok){
+    if (!res.ok) {
       console.error("Failed to post article view");
       return;
-    };
-  }
+    }
+  },
 }));
