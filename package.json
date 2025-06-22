@@ -21,6 +21,7 @@
   "scripts": {
     "test": "jest",
     "test:watch": "jest --watchAll",
+    "build": "node scripts/buildHost.mjs",
     "start": "webpack serve",
     "dev": "node ./scripts/setupApp.mjs",
     "create-remote": "node ./scripts/create-remote.mjs",
