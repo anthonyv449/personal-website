@@ -42,7 +42,7 @@ export const MeSection = ({}) => {
           </Typography>
         </Box>
       </Grid>
-      <Grid xs={6} height="10rem" width="10rem" overflow="hidden">
+      <Grid xs={6} height="10rem" width="10rem" overflow="hidden" marginTop={5}>
         <Carousel autoPlay interval={5000}>
           {items.map((item, index) => (
             <Box key={index}>

@@ -22,7 +22,6 @@
     "test": "jest",
     "test:watch": "jest --watchAll",
     "start": "webpack serve",
-    "build": "webpack --config webpack.config.js --mode production",
     "dev": "node ./scripts/setupApp.mjs",
     "create-remote": "node ./scripts/create-remote.mjs",
     "build:host": "node scripts/buildHost.mjs",
