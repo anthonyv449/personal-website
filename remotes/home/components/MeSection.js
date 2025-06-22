@@ -5,7 +5,7 @@ import { withHostPath } from "@anthonyv449/ui-kit";
 export const MeSection = ({}) => {
   const [items, setItems] = useState([]);
   useEffect(() => {
-    fetch(withHostPath("/GradImages/images.json"))
+    fetch(withHostPath("/images/images.json"))
       .then((response) => {
         if (!response.ok) {
           throw new Error("Failed to fetch image data");
@@ -18,7 +18,7 @@ export const MeSection = ({}) => {
           ...item,
           image: item.image.startsWith("/")
             ? item.image
-            : withHostPath(`/GradImages/${item.image}`),
+            : withHostPath(`/images/${item.image}`),
         }));
         setItems(adjustedData);
       })
@@ -42,7 +42,7 @@ export const MeSection = ({}) => {
           </Typography>
         </Box>
       </Grid>
-      <Grid xs={6} height="10rem" width="10rem" overflow="hidden">
+      <Grid xs={6} height="10rem" width="10rem" overflow="hidden" marginTop={5}>
         <Carousel autoPlay interval={5000}>
           {items.map((item, index) => (
             <Box key={index}>

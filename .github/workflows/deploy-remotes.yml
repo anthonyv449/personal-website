@@ -33,7 +33,7 @@ jobs:
         uses: actions/setup-node@v3
         with:
           node-version: 18
-          cache: 'npm'
+          cache: "npm"
 
       - name: Install dependencies
         if: env.REMOTE_NAMES != ''
@@ -42,7 +42,7 @@ jobs:
       - name: Build changed remotes
         if: env.REMOTE_NAMES != ''
         run: |
-          REMOTE_NAMES="$REMOTE_NAMES" node scripts/buildAll.mjs
+          REMOTE_NAMES="$REMOTE_NAMES" node scripts/buildAllRemotes.mjs
 
       - name: Azure Login
         if: env.REMOTE_NAMES != ''

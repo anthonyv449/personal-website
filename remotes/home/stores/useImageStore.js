@@ -6,7 +6,7 @@ export const useImageStore = create((set) => ({
   articleImages: [],
   loadArticleImages: async () => {
     try {
-      const response = await fetch(withHostPath("/GradImages/articleImages.json"));
+      const response = await fetch(withHostPath("/images/articleImages.json"));
       if (!response.ok) {
         throw new Error("Failed to fetch image data");
       }
@@ -16,7 +16,7 @@ export const useImageStore = create((set) => ({
         ...item,
         image: item.image.startsWith("/")
           ? item.image
-          : withHostPath(`/GradImages/${item.image}`),
+          : withHostPath(`/images/${item.image}`),
       }));
 
       set({ articleImages: adjustedData });

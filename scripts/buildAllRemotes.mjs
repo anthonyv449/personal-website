@@ -97,51 +97,6 @@ function createRemoteConfig(remote, hostShared, version) {
   };
 }
 
-function createHostConfig(remotesMap, hostShared) {
-  return {
-    mode: "production",
-    entry: path.resolve(process.cwd(), "host/src/index.js"),
-    output: {
-      path: path.resolve(process.cwd(), "dist/host"),
-      filename: "bundle.js",
-      publicPath: "/",
-      clean: true,
-    },
-    module: {
-      rules: [
-        {
-          test: /\.(js|jsx)$/,
-          exclude: /node_modules/,
-          use: {
-            loader: "babel-loader",
-            options: { presets: ["@babel/preset-env", "@babel/preset-react"] },
-          },
-        },
-        {
-          test: /\.css$/,
-          use: ["style-loader", "css-loader"],
-        },
-        {
-          test: /\.svg$/,
-          issuer: /\.[jt]sx?$/,
-          use: [{ loader: "@svgr/webpack" }],
-        },
-      ],
-    },
-    resolve: { extensions: [".js", ".jsx"] },
-    plugins: [
-      new HtmlWebpackPlugin({
-        template: path.resolve(process.cwd(), "host/public/index.html"),
-      }),
-      new ModuleFederationPlugin({
-        name: "host",
-        remotes: remotesMap,
-        shared: hostShared,
-      }),
-    ],
-  };
-}
-
 function runWebpack(config, label) {
   return new Promise((resolve, reject) => {
     webpack(config, (err, stats) => {
@@ -160,7 +115,7 @@ function runWebpack(config, label) {
   });
 }
 
-async function buildAll() {
+async function buildAllRemotes() {
   let remotes = await loadRemotes();
   const only = process.env.REMOTE_NAMES
     ? process.env.REMOTE_NAMES.split(/[,\s]+/).filter(Boolean)
@@ -195,7 +150,7 @@ async function buildAll() {
   console.log("🎉 All builds done.");
 }
 
-buildAll().catch((e) => {
+buildAllRemotes().catch((e) => {
   console.error("Build process failed:", e);
   process.exit(1);
 });
