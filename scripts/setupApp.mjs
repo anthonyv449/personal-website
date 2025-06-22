@@ -13,24 +13,6 @@ import ModuleFederationPlugin from "webpack/lib/container/ModuleFederationPlugin
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-function generateExposeEntries(folderPath, exposePrefix = "./") {
-  const absolutePath = path.resolve(__dirname, folderPath);
-  const files = fs.readdirSync(absolutePath);
-
-  const exposes = {};
-
-  files.forEach((file) => {
-    const ext = path.extname(file);
-    const base = path.basename(file, ext);
-
-    if (ext === ".js" || ext === ".jsx") {
-      exposes[`${exposePrefix}${base}`] = `${folderPath}/${file}`;
-    }
-  });
-
-  return exposes;
-}
-
 /**
  * Helper: Generate a shared config object for all dependencies from the host's package.json.
  */
@@ -144,11 +126,20 @@ function createRemoteConfig(remote) {
     const hostShared = generateShared(hostDeps);
     // Merge host shared settings. This will only share the dependencies from the host.
     const shared = mergeShared(hostShared, remoteDeps);
-    console.log(shared);
-
+    let exposedModules = {
+      [remote.name]: `./remotes/${remote.name.toLowerCase()}/index.js`,
+    };
+    if (remote.children) {
+      remote.children.forEach(
+        (child) =>
+          (exposedModules[
+            child.title
+          ] = `./remotes/${remote.name.toLowerCase()}/${child.title}.js`)
+      );
+    }
     return {
       mode: "development",
-      entry: remote.entry,
+      entry: `./remotes/${remote.name.toLowerCase()}/index.js`,
       devServer: {
         port: remote.port,
         open: false,
@@ -199,7 +190,7 @@ function createRemoteConfig(remote) {
         new ModuleFederationPlugin({
           name: remote.name,
           filename: "remoteEntry.js",
-          exposes: remote.exposes,
+          exposes: exposedModules,
           shared,
         }),
       ],
@@ -243,7 +234,6 @@ async function startRemotes(selectedRemotes) {
   await Promise.all(
     selectedRemotes.map(async (remote) => {
       const config = createRemoteConfig(remote);
-      console.log("config", config.plugins[1]);
       await runDevServer(config);
       console.log(`${remote.name} running at http://localhost:${remote.port}`);
     })

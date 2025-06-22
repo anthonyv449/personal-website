@@ -37,9 +37,23 @@ function mergeShared(hostShared) {
 }
 
 function createRemoteConfig(remote, hostShared, version) {
+  let exposedModules = {
+    [remote.name]: `./remotes/${remote.name.toLowerCase()}/index.js`,
+  };
+  if (remote.children) {
+    remote.children.forEach(
+      (child) =>
+        (exposedModules[
+          child.title
+        ] = `./remotes/${remote.name.toLowerCase()}/${child.title}.js`)
+    );
+  }
   return {
     mode: "production",
-    entry: path.resolve(process.cwd(), remote.entry),
+    entry: path.resolve(
+      process.cwd(),
+      `./remotes/${remote.name.toLowerCase()}/index.js`
+    ),
     output: {
       path: path.resolve(process.cwd(), "dist", remote.name, version),
       filename: "bundle.js",
@@ -76,7 +90,7 @@ function createRemoteConfig(remote, hostShared, version) {
       new ModuleFederationPlugin({
         name: remote.name,
         filename: "remoteEntry.js",
-        exposes: remote.exposes,
+        exposes: exposedModules,
         shared: mergeShared(hostShared),
       }),
     ],
@@ -116,7 +130,9 @@ function createHostConfig(remotesMap, hostShared) {
     },
     resolve: { extensions: [".js", ".jsx"] },
     plugins: [
-      new HtmlWebpackPlugin({ template: path.resolve(process.cwd(), "host/public/index.html") }),
+      new HtmlWebpackPlugin({
+        template: path.resolve(process.cwd(), "host/public/index.html"),
+      }),
       new ModuleFederationPlugin({
         name: "host",
         remotes: remotesMap,
@@ -131,9 +147,11 @@ function runWebpack(config, label) {
     webpack(config, (err, stats) => {
       if (err || stats.hasErrors()) {
         console.error(`❌ ${label} build failed`);
-        console.error(stats.toString({
-          colors: true,
-        }));
+        console.error(
+          stats.toString({
+            colors: true,
+          })
+        );
         return reject(err || new Error("Build error"));
       }
       console.log(`✅ ${label} built`);
@@ -148,30 +166,36 @@ async function buildAll() {
     ? process.env.REMOTE_NAMES.split(/[,\s]+/).filter(Boolean)
     : null;
   if (only) {
-    remotes = remotes.filter(r =>
-      only.includes(r.name) || only.includes(r.name.toLowerCase())
+    remotes = remotes.filter(
+      (r) => only.includes(r.name) || only.includes(r.name.toLowerCase())
     );
   }
-  const hostDeps = require(path.resolve(process.cwd(), "package.json")).dependencies;
+  const hostDeps = require(path.resolve(
+    process.cwd(),
+    "package.json"
+  )).dependencies;
   const hostShared = generateShared(hostDeps);
 
   const remotesMap = {};
   for (const r of remotes) {
-    const pkg = require(path.resolve(process.cwd(), r.folder, 'package.json'));
+    const pkg = require(path.resolve(process.cwd(), r.folder, "package.json"));
     const version = pkg.version;
-    await runWebpack(createRemoteConfig(r, hostShared, version), `${r.name} v${version}`);
-    const versionPath = path.resolve(process.cwd(), 'dist', r.name, version);
-    const latestPath = path.resolve(process.cwd(), 'dist', r.name, 'latest');
+    await runWebpack(
+      createRemoteConfig(r, hostShared, version),
+      `${r.name} v${version}`
+    );
+    const versionPath = path.resolve(process.cwd(), "dist", r.name, version);
+    const latestPath = path.resolve(process.cwd(), "dist", r.name, "latest");
     await fs.rm(latestPath, { recursive: true, force: true });
     await fs.cp(versionPath, latestPath, { recursive: true });
-    remotesMap[r.name] = `${r.name}@/remotes/${r.name.toLowerCase()}/latest/remoteEntry.js`;
+    remotesMap[r.name] = `${
+      r.name
+    }@/remotes/${r.name.toLowerCase()}/latest/remoteEntry.js`;
   }
-
-  await runWebpack(createHostConfig(remotesMap, hostShared), "host");
   console.log("🎉 All builds done.");
 }
 
-buildAll().catch(e => {
+buildAll().catch((e) => {
   console.error("Build process failed:", e);
   process.exit(1);
 });
