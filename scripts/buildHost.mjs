@@ -24,7 +24,10 @@ function generateShared(hostDeps) {
 }
 
 async function loadRemotes() {
-  const jsonStr = await fs.readFile(path.resolve(__dirname, "../host/public/remotes.json"), "utf-8");
+  const jsonStr = await fs.readFile(
+    path.resolve(__dirname, "../host/public/remotes.json"),
+    "utf-8"
+  );
   return JSON.parse(jsonStr);
 }
 
@@ -90,12 +93,14 @@ function runWebpack(config, name) {
     });
   });
 }
-
+// all we need from remotes.json here is name
 async function buildHost() {
   const remotes = await loadRemotes();
   const remotesMap = {};
   remotes.forEach((r) => {
-    remotesMap[r.name] = `${r.name}@/remotes/${r.name.toLowerCase()}/latest/remoteEntry.js`;
+    remotesMap[r.name] = `${
+      r.name
+    }@/remotes/${r.name.toLowerCase()}/latest/remoteEntry.js`;
   });
   const hostDeps = require("../package.json").dependencies;
   const shared = generateShared(hostDeps);

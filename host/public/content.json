@@ -1,25 +1,18 @@
 {
   "pages": [
     {
-      "id": "home",
       "title": "Home",
-      "path": "/",
-      "exposedModule": "Home"
+      "path": "/"
     },
     {
-      "id": "resume",
       "path": "/resume",
-      "title": "Resume",
-      "exposedModule": "Resume"
+      "title": "Resume"
     },
     {
-      "id": "writings",
       "path": "/writings",
       "title": "Writings",
-      "exposedModule": "Writings",
       "children": [
         {
-          "id": "article",
           "title": "Writings",
           "path": "/writings/:slug",
           "exposedModule": "Article"
