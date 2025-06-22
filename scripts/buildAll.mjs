@@ -192,8 +192,6 @@ async function buildAll() {
       r.name
     }@/remotes/${r.name.toLowerCase()}/latest/remoteEntry.js`;
   }
-
-  await runWebpack(createHostConfig(remotesMap, hostShared), "host");
   console.log("🎉 All builds done.");
 }
 

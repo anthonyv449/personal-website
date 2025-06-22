@@ -4,6 +4,7 @@ import { fileURLToPath } from "url";
 import { createRequire } from "module";
 import fs from "fs/promises";
 import HtmlWebpackPlugin from "html-webpack-plugin";
+import CopyWebpackPlugin from "copy-webpack-plugin";
 import ModuleFederationPlugin from "webpack/lib/container/ModuleFederationPlugin.js";
 
 const require = createRequire(import.meta.url);
@@ -70,11 +71,20 @@ function createHostConfig(remotesMap, shared) {
     plugins: [
       new HtmlWebpackPlugin({
         template: path.resolve(__dirname, "../host/public/index.html"),
+        filename: "index.html",
       }),
       new ModuleFederationPlugin({
         name: "host",
         remotes: remotesMap,
         shared,
+      }),
+      new CopyWebpackPlugin({
+        patterns: [
+          { from: "host/public/content.json", to: "content.json" },
+          { from: "host/public/remotes.json", to: "remotes.json" },
+          { from: "host/public/env.json", to: "env.json" },
+          { from: "host/public/favicon.ico", to: "favicon.ico" },
+        ],
       }),
     ],
   };
