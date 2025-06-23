@@ -13,22 +13,28 @@ async function loadRemotes() {
   return JSON.parse(json);
 }
 
-function generateShared(hostDeps) {
+function generateShared() {
+  const hostPkg = require("../package.json");
+  const deps = hostPkg.dependencies || {};
+  const mfSharedList = hostPkg.mfShared || [];
+
   const shared = {};
-  for (const pkg of Object.keys(hostDeps)) {
-    let version;
-    try {
-      version = require(path.join(pkg, "package.json")).version;
-    } catch {
-      version = hostDeps[pkg].replace(/^[\^~]/, "");
+  mfSharedList.forEach((pkg) => {
+    if (!deps[pkg]) {
+      console.warn(
+        `⚠️ Host mfShared package "${pkg}" is not listed in dependencies.`
+      );
+      return;
     }
+
     shared[pkg] = {
       singleton: true,
-      strictVersion: true,
-      requiredVersion: version,
       eager: true,
+      requiredVersion: deps[pkg],
+      strictVersion: true,
     };
-  }
+  });
+
   return shared;
 }
 
@@ -125,11 +131,7 @@ async function buildAllRemotes() {
       (r) => only.includes(r.name) || only.includes(r.name.toLowerCase())
     );
   }
-  const hostDeps = require(path.resolve(
-    process.cwd(),
-    "package.json"
-  )).dependencies;
-  const hostShared = generateShared(hostDeps);
+  const hostShared = generateShared();
 
   const remotesMap = {};
   for (const r of remotes) {

@@ -11,16 +11,28 @@ const require = createRequire(import.meta.url);
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-function generateShared(hostDeps) {
+function generateShared() {
+  const hostPkg = require("../package.json");
+  const deps = hostPkg.dependencies || {};
+  const mfSharedList = hostPkg.mfShared || [];
+
   const shared = {};
-  Object.keys(hostDeps).forEach((pkg) => {
+  mfSharedList.forEach((pkg) => {
+    if (!deps[pkg]) {
+      console.warn(
+        `⚠️ Host mfShared package "${pkg}" is not listed in dependencies.`
+      );
+      return;
+    }
+
     shared[pkg] = {
       singleton: true,
       eager: true,
-      requiredVersion: hostDeps[pkg],
+      requiredVersion: deps[pkg],
       strictVersion: true,
     };
   });
+
   return shared;
 }
 
@@ -112,8 +124,7 @@ async function buildHost() {
       r.name
     }@/remotes/${r.name.toLowerCase()}/latest/remoteEntry.js`;
   });
-  const hostDeps = require("../package.json").dependencies;
-  const shared = generateShared(hostDeps);
+  const shared = generateShared();
   const hostConfig = createHostConfig(remotesMap, shared);
   await runWebpack(hostConfig, "host");
   console.log("\n🎉 Host build complete.");
