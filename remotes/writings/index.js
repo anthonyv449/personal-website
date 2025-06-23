@@ -21,6 +21,7 @@ export const loader = async () => {
   return loadArticles();
 };
 const Writings = () => {
+  //initiate remote change
   const navigate = useNavigate();
   const { articles, createArticle, setCurrentArticleBySlug } =
     useArticleStore();
