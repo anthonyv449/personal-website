@@ -109,7 +109,8 @@ const Writings = () => {
               <Card>
                 <CardContent sx={{ height: "40%" }}>
                   <Typography variant="caption">
-                    {article.Content.slice(0, 50)}...
+                    {article.Content.slice(0, 50).replace(/#+/, "").toString()}
+                    ...
                   </Typography>
                 </CardContent>
                 <CardActionArea
