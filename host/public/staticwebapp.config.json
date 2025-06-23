@@ -9,5 +9,13 @@
       "/content.json",
       "/remotes.json"
     ]
-  }
+  },
+  "routes": [
+    {
+      "route": "/resume",
+      "methods": [
+        "get"
+      ]
+    }
+  ]
 }
