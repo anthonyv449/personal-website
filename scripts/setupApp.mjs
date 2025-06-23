@@ -16,16 +16,28 @@ const __dirname = path.dirname(__filename);
 /**
  * Helper: Generate a shared config object for all dependencies from the host's package.json.
  */
-function generateShared(hostDeps) {
+function generateShared() {
+  const hostPkg = require("../package.json");
+  const deps = hostPkg.dependencies || {};
+  const mfSharedList = hostPkg.mfShared || [];
+
   const shared = {};
-  Object.keys(hostDeps).forEach((pkg) => {
+  mfSharedList.forEach((pkg) => {
+    if (!deps[pkg]) {
+      console.warn(
+        `⚠️ Host mfShared package "${pkg}" is not listed in dependencies.`
+      );
+      return;
+    }
+
     shared[pkg] = {
       singleton: true,
       eager: true,
-      requiredVersion: hostDeps[pkg],
+      requiredVersion: deps[pkg],
       strictVersion: true,
     };
   });
+
   return shared;
 }
 
@@ -58,8 +70,7 @@ async function loadRemotes() {
  * Create the in-memory Webpack config for the HOST application.
  */
 function createHostConfig(remotesMap) {
-  const hostDeps = require("../package.json").dependencies;
-  const shared = generateShared(hostDeps);
+  const shared = generateShared();
   return {
     mode: "development",
     entry: path.join(__dirname, "../host/src/index.js"),
@@ -122,8 +133,7 @@ function createRemoteConfig(remote) {
     // Assume remote.folder is provided in the remotes.json file to locate its package.json.
     const remoteDeps = require(`../${remote.folder}/package.json`).dependencies;
     // Get the host's shared configuration to be used in remotes.
-    const hostDeps = require("../package.json").dependencies;
-    const hostShared = generateShared(hostDeps);
+    const hostShared = generateShared();
     // Merge host shared settings. This will only share the dependencies from the host.
     const shared = mergeShared(hostShared, remoteDeps);
     let exposedModules = {
