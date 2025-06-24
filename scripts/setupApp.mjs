@@ -13,37 +13,31 @@ import ModuleFederationPlugin from "webpack/lib/container/ModuleFederationPlugin
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-function generateExposeEntries(folderPath, exposePrefix = "./") {
-  const absolutePath = path.resolve(__dirname, folderPath);
-  const files = fs.readdirSync(absolutePath);
-
-  const exposes = {};
-
-  files.forEach((file) => {
-    const ext = path.extname(file);
-    const base = path.basename(file, ext);
-
-    if (ext === ".js" || ext === ".jsx") {
-      exposes[`${exposePrefix}${base}`] = `${folderPath}/${file}`;
-    }
-  });
-
-  return exposes;
-}
-
 /**
  * Helper: Generate a shared config object for all dependencies from the host's package.json.
  */
-function generateShared(hostDeps) {
+function generateShared() {
+  const hostPkg = require("../package.json");
+  const deps = hostPkg.dependencies || {};
+  const mfSharedList = hostPkg.mfShared || [];
+
   const shared = {};
-  Object.keys(hostDeps).forEach((pkg) => {
+  mfSharedList.forEach((pkg) => {
+    if (!deps[pkg]) {
+      console.warn(
+        `⚠️ Host mfShared package "${pkg}" is not listed in dependencies.`
+      );
+      return;
+    }
+
     shared[pkg] = {
       singleton: true,
       eager: true,
-      requiredVersion: hostDeps[pkg],
+      requiredVersion: deps[pkg],
       strictVersion: true,
     };
   });
+
   return shared;
 }
 
@@ -76,8 +70,7 @@ async function loadRemotes() {
  * Create the in-memory Webpack config for the HOST application.
  */
 function createHostConfig(remotesMap) {
-  const hostDeps = require("../package.json").dependencies;
-  const shared = generateShared(hostDeps);
+  const shared = generateShared();
   return {
     mode: "development",
     entry: path.join(__dirname, "../host/src/index.js"),
@@ -121,6 +114,7 @@ function createHostConfig(remotesMap) {
     },
     resolve: {
       extensions: [".js", ".jsx"],
+      modules: [path.resolve(__dirname, "../node_modules"), "node_modules"],
     },
     plugins: [
       new HtmlWebpackPlugin({
@@ -140,15 +134,23 @@ function createRemoteConfig(remote) {
     // Assume remote.folder is provided in the remotes.json file to locate its package.json.
     const remoteDeps = require(`../${remote.folder}/package.json`).dependencies;
     // Get the host's shared configuration to be used in remotes.
-    const hostDeps = require("../package.json").dependencies;
-    const hostShared = generateShared(hostDeps);
+    const hostShared = generateShared();
     // Merge host shared settings. This will only share the dependencies from the host.
     const shared = mergeShared(hostShared, remoteDeps);
-    console.log(shared);
-
+    let exposedModules = {
+      [remote.name]: `./remotes/${remote.name.toLowerCase()}/index.js`,
+    };
+    if (remote.children) {
+      remote.children.forEach(
+        (child) =>
+          (exposedModules[
+            child.title
+          ] = `./remotes/${remote.name.toLowerCase()}/${child.title}.js`)
+      );
+    }
     return {
       mode: "development",
-      entry: remote.entry,
+      entry: `./remotes/${remote.name.toLowerCase()}/index.js`,
       devServer: {
         port: remote.port,
         open: false,
@@ -190,6 +192,7 @@ function createRemoteConfig(remote) {
       },
       resolve: {
         extensions: [".js", ".jsx"],
+        modules: [path.resolve(__dirname, "../node_modules"), "node_modules"],
       },
       plugins: [
         new HtmlWebpackPlugin({
@@ -199,7 +202,7 @@ function createRemoteConfig(remote) {
         new ModuleFederationPlugin({
           name: remote.name,
           filename: "remoteEntry.js",
-          exposes: remote.exposes,
+          exposes: exposedModules,
           shared,
         }),
       ],
@@ -243,7 +246,6 @@ async function startRemotes(selectedRemotes) {
   await Promise.all(
     selectedRemotes.map(async (remote) => {
       const config = createRemoteConfig(remote);
-      console.log("config", config.plugins[1]);
       await runDevServer(config);
       console.log(`${remote.name} running at http://localhost:${remote.port}`);
     })

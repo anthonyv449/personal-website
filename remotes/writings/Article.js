@@ -4,6 +4,7 @@ import { useArticleStore } from "./store/useArticleStore";
 import { Box, Typography } from "@mui/material";
 import ReactMarkdown from "react-markdown";
 import { Spinner } from "@anthonyv449/ui-kit";
+import remarkGfm from "remark-gfm";
 
 export const loader = async () => {
   //add in API calls here from store
@@ -42,6 +43,7 @@ const Article = () => {
         {article.Title}
       </Typography>
       <ReactMarkdown
+        remarkPlugins={[remarkGfm]}
         components={{
           h1: ({ node, ...props }) => (
             <Typography variant="h4" gutterBottom {...props} />
@@ -60,11 +62,7 @@ const Article = () => {
             <Typography
               component="li"
               variant="body1"
-              sx={{
-                listStyleType: "disc",
-                pl: 2,
-                mb: 1,
-              }}
+              sx={{ listStyleType: "disc", pl: 2, mb: 1 }}
               {...props}
             />
           ),
@@ -72,6 +70,42 @@ const Article = () => {
             <Typography
               component="span"
               sx={{ fontWeight: "bold", display: "inline" }}
+              {...props}
+            />
+          ),
+          table: ({ node, ...props }) => (
+            <Box
+              component="table"
+              sx={{
+                width: "100%",
+                borderCollapse: "collapse",
+                my: 2,
+              }}
+              {...props}
+            />
+          ),
+          thead: ({ node, ...props }) => <thead {...props} />,
+          tbody: ({ node, ...props }) => <tbody {...props} />,
+          tr: ({ node, ...props }) => (
+            <tr style={{ borderBottom: "1px solid #444" }} {...props} />
+          ),
+          th: ({ node, ...props }) => (
+            <th
+              style={{
+                padding: "8px",
+                textAlign: "left",
+                fontWeight: "bold",
+                border: "1px solid #444",
+              }}
+              {...props}
+            />
+          ),
+          td: ({ node, ...props }) => (
+            <td
+              style={{
+                padding: "8px",
+                border: "1px solid #444",
+              }}
               {...props}
             />
           ),

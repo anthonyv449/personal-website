@@ -21,6 +21,7 @@ export const loader = async () => {
   return loadArticles();
 };
 const Writings = () => {
+  //initiate remote change
   const navigate = useNavigate();
   const { articles, createArticle, setCurrentArticleBySlug } =
     useArticleStore();
@@ -107,30 +108,23 @@ const Writings = () => {
           articles.map((article) => (
             <Grid key={article.Slug}>
               <Card>
+                <CardContent sx={{ height: "40%" }}>
+                  <Typography variant="caption">
+                    {article.Content.slice(0, 50).replace(/#+/, "").toString()}
+                    ...
+                  </Typography>
+                </CardContent>
                 <CardActionArea
                   onClick={() => {
                     navigate(`/writings/${article.Slug}`);
                     setCurrentArticleBySlug(article.Slug);
                   }}
-                  sx={{
-                    backgroundColor: "#9c27b0",
-                    ":hover": { backgroundColor: "#7b1fa2" },
-                  }}
+                  sx={{ height: "60%" }}
                 >
                   <CardContent>
-                    <Typography variant="h6" color="white">
-                      {article.Title}
-                    </Typography>
-                    <Typography variant="body2" color="white">
-                      {article.Author}
-                    </Typography>
+                    <Typography variant="h6">{article.Title}</Typography>
                   </CardContent>
                 </CardActionArea>
-                <CardContent sx={{ backgroundColor: "#f3e5f5" }}>
-                  <Typography variant="body2" color="black">
-                    {article.Content.slice(0, 100)}...
-                  </Typography>
-                </CardContent>
               </Card>
             </Grid>
           ))

@@ -22,11 +22,21 @@ const theme = createTheme({
       default: customColors.grayColor,
     },
   },
+  typography: {
+    h4: {
+      color: customColors.mainTextColor,
+    },
+    h5: {
+      color: customColors.mainTextColor,
+    },
+    body1: {
+      color: customColors.mainTextColor,
+    },
+  },
   components: {
     MuiTypography: {
       styleOverrides: {
         root: {
-          color: customColors.mainTextColor,
           "&.header": {
             fontWeight: 600,
             fontSize: 18,

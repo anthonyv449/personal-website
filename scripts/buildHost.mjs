@@ -4,27 +4,43 @@ import { fileURLToPath } from "url";
 import { createRequire } from "module";
 import fs from "fs/promises";
 import HtmlWebpackPlugin from "html-webpack-plugin";
+import CopyWebpackPlugin from "copy-webpack-plugin";
 import ModuleFederationPlugin from "webpack/lib/container/ModuleFederationPlugin.js";
 
 const require = createRequire(import.meta.url);
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-function generateShared(hostDeps) {
+function generateShared() {
+  const hostPkg = require("../package.json");
+  const deps = hostPkg.dependencies || {};
+  const mfSharedList = hostPkg.mfShared || [];
+
   const shared = {};
-  Object.keys(hostDeps).forEach((pkg) => {
+  mfSharedList.forEach((pkg) => {
+    if (!deps[pkg]) {
+      console.warn(
+        `⚠️ Host mfShared package "${pkg}" is not listed in dependencies.`
+      );
+      return;
+    }
+
     shared[pkg] = {
       singleton: true,
       eager: true,
-      requiredVersion: hostDeps[pkg],
+      requiredVersion: deps[pkg],
       strictVersion: true,
     };
   });
+
   return shared;
 }
 
 async function loadRemotes() {
-  const jsonStr = await fs.readFile(path.resolve(__dirname, "../host/public/remotes.json"), "utf-8");
+  const jsonStr = await fs.readFile(
+    path.resolve(__dirname, "../host/public/remotes.json"),
+    "utf-8"
+  );
   return JSON.parse(jsonStr);
 }
 
@@ -63,15 +79,25 @@ function createHostConfig(remotesMap, shared) {
     },
     resolve: {
       extensions: [".js", ".jsx"],
+      modules: [path.resolve(__dirname, "../node_modules"), "node_modules"],
     },
     plugins: [
       new HtmlWebpackPlugin({
         template: path.resolve(__dirname, "../host/public/index.html"),
+        filename: "index.html",
       }),
       new ModuleFederationPlugin({
         name: "host",
         remotes: remotesMap,
         shared,
+      }),
+      new CopyWebpackPlugin({
+        patterns: [
+          { from: "host/public/content.json", to: "content.json" },
+          { from: "host/public/remotes.json", to: "remotes.json" },
+          { from: "host/public/env.json", to: "env.json" },
+          { from: "host/public/favicon.ico", to: "favicon.ico" },
+        ],
       }),
     ],
   };
@@ -90,15 +116,16 @@ function runWebpack(config, name) {
     });
   });
 }
-
+// all we need from remotes.json here is name
 async function buildHost() {
   const remotes = await loadRemotes();
   const remotesMap = {};
   remotes.forEach((r) => {
-    remotesMap[r.name] = `${r.name}@/remotes/${r.name.toLowerCase()}/latest/remoteEntry.js`;
+    remotesMap[r.name] = `${
+      r.name
+    }@/remotes/${r.name.toLowerCase()}/latest/remoteEntry.js`;
   });
-  const hostDeps = require("../package.json").dependencies;
-  const shared = generateShared(hostDeps);
+  const shared = generateShared();
   const hostConfig = createHostConfig(remotesMap, shared);
   await runWebpack(hostConfig, "host");
   console.log("\n🎉 Host build complete.");

@@ -14,35 +14,33 @@ const Navbar = ({ pages }) => {
   const theme = useTheme();
   const { instance } = useMsal();
   const { user, setUser, logoutUser } = useGlobalData();
-  
+
   const handleLogin = async () => {
-  try {
-    const loginResponse = await instance.loginPopup({
-      scopes: ["openid", "profile", "email"]
-    });
+    try {
+      const loginResponse = await instance.loginPopup({
+        scopes: ["openid", "profile", "email"],
+      });
 
-    const idToken = loginResponse.idToken;
+      const idToken = loginResponse.idToken;
 
-    const response = await fetch(withApiPath("/auth/microsoft"), {
-      method: "POST",
-      credentials: "include",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ idToken })
-    });
+      const response = await fetch(withApiPath("/auth/microsoft"), {
+        method: "POST",
+        credentials: "include",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ idToken }),
+      });
 
-    const user = await response.json();
-    setUser(user);
-  } catch (err) {
-    console.error("Login failed", err);
-  }
-};
-
+      const user = await response.json();
+      setUser(user);
+    } catch (err) {
+      console.error("Login failed", err);
+    }
+  };
 
   const handleLogout = async () => {
     await logoutUser();
     instance.logoutPopup();
   };
-
 
   return (
     <Grid
@@ -67,7 +65,7 @@ const Navbar = ({ pages }) => {
       <Grid size="auto">
         {pages.map((page) => (
           <MuiLink
-            key={page.id}
+            key={page.title.toLowerCase()}
             component={NavLink}
             to={page.path}
             sx={{

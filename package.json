@@ -21,12 +21,12 @@
   "scripts": {
     "test": "jest",
     "test:watch": "jest --watchAll",
+    "sync:peers": "node scripts/syncPeerDeps.js",
+    "build": "npm run sync:peers && node scripts/buildHost.mjs",
     "start": "webpack serve",
-    "build": "webpack --config webpack.config.js --mode production",
-    "dev": "node ./scripts/setupApp.mjs",
+    "dev": "npm run sync:peers && node ./scripts/setupApp.mjs",
     "create-remote": "node ./scripts/create-remote.mjs",
-    "build:host": "node scripts/buildHost.mjs",
-    "build:all": "node scripts/buildAll.mjs",
+    "build:all": "npm run sync:peers && node scripts/buildAllRemotes.mjs",
     "publish:ui-kit": "cd ui-kit && npm publish --access public"
   },
   "keywords": [],
@@ -34,7 +34,7 @@
   "license": "ISC",
   "description": "",
   "dependencies": {
-    "@anthonyv449/ui-kit": "^1.3.2",
+    "@anthonyv449/ui-kit": "^1.3.6",
     "@azure/msal-browser": "^4.9.1",
     "@azure/msal-react": "^3.0.8",
     "@emotion/react": "^11.14.0",
@@ -50,6 +50,19 @@
     "react-router-dom": "^7.1.3",
     "zustand": "^5.0.3"
   },
+  "mfShared": [
+    "@anthonyv449/ui-kit",
+    "@emotion/react",
+    "@emotion/styled",
+    "@mui/icons-material",
+    "@mui/material",
+    "lodash",
+    "react",
+    "react-dom",
+    "react-markdown",
+    "zustand",
+    "react-router-dom"
+  ],
   "devDependencies": {
     "@babel/core": "^7.27.4",
     "@babel/preset-env": "^7.27.2",
