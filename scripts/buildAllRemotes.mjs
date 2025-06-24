@@ -90,7 +90,10 @@ function createRemoteConfig(remote, hostShared, version) {
         },
       ],
     },
-    resolve: { extensions: [".js", ".jsx"] },
+    resolve: {
+      extensions: [".js", ".jsx"],
+      modules: [path.resolve(__dirname, "../node_modules"), "node_modules"],
+    },
     plugins: [
       new HtmlWebpackPlugin({ title: remote.name }),
       new ModuleFederationPlugin({

@@ -79,6 +79,7 @@ function createHostConfig(remotesMap, shared) {
     },
     resolve: {
       extensions: [".js", ".jsx"],
+      modules: [path.resolve(__dirname, "../node_modules"), "node_modules"],
     },
     plugins: [
       new HtmlWebpackPlugin({

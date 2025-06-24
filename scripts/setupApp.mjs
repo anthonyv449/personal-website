@@ -114,6 +114,7 @@ function createHostConfig(remotesMap) {
     },
     resolve: {
       extensions: [".js", ".jsx"],
+      modules: [path.resolve(__dirname, "../node_modules"), "node_modules"],
     },
     plugins: [
       new HtmlWebpackPlugin({
@@ -191,6 +192,7 @@ function createRemoteConfig(remote) {
       },
       resolve: {
         extensions: [".js", ".jsx"],
+        modules: [path.resolve(__dirname, "../node_modules"), "node_modules"],
       },
       plugins: [
         new HtmlWebpackPlugin({
