@@ -1,6 +1,7 @@
 import webpack from "webpack";
 import path from "path";
 import fs from "fs/promises";
+import { fileURLToPath } from "url";
 import { createRequire } from "module";
 import HtmlWebpackPlugin from "html-webpack-plugin";
 import ModuleFederationPlugin from "webpack/lib/container/ModuleFederationPlugin.js";
