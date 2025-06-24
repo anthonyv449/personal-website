@@ -20,10 +20,12 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Check installed ui-kit version
-        run: npm list @anthonyv449/ui-kit
+      - name: Clean install deps
+        run: |
+          rm -rf node_modules package-lock.json
+          npm install
 
-      - name: Check ui-kit installed
+      - name: Confirm ui-kit dist exists
         run: ls -la node_modules/@anthonyv449/ui-kit/dist/index.js
 
       - name: Build host
