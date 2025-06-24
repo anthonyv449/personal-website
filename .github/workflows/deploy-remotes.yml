@@ -35,9 +35,10 @@ jobs:
           node-version: 18
           cache: "npm"
 
-      - name: Install dependencies
-        if: env.REMOTE_NAMES != ''
-        run: npm ci
+      - name: Clean install from registry
+        run: |
+          rm -rf node_modules package-lock.json ui-kit
+          npm install --force
 
       - name: Build changed remotes
         if: env.REMOTE_NAMES != ''
