@@ -20,6 +20,9 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      - name: Check installed ui-kit version
+        run: npm list @anthonyv449/ui-kit
+
       - name: Build host
         run: npm run build
 
