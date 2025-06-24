@@ -20,14 +20,6 @@ jobs:
           submodules: true
           lfs: false
 
-      - name: Clean install from registry
-        run: |
-          rm -rf node_modules package-lock.json ui-kit
-          npm install --force
-
-      - name: Build application
-        run: npm run build
-
       - name: Build And Deploy
         id: builddeploy
         uses: Azure/static-web-apps-deploy@v1
