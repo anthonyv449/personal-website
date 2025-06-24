@@ -20,8 +20,10 @@ jobs:
           submodules: true
           lfs: false
 
-      - name: Install dependencies
-        run: npm install
+      - name: Clean install from registry
+        run: |
+          rm -rf node_modules package-lock.json ui-kit
+          npm install --force
 
       - name: Build application
         run: npm run build

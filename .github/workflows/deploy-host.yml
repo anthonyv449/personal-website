@@ -22,15 +22,6 @@ jobs:
           rm -rf node_modules package-lock.json ui-kit
           npm install --force
 
-      - name: List package contents
-        run: ls -R node_modules/@anthonyv449/ui-kit
-
-      - name: Show package.json entry point
-        run: cat node_modules/@anthonyv449/ui-kit/package.json
-
-      - name: Verify ui-kit entry file exists
-        run: ls -la node_modules/@anthonyv449/ui-kit/dist/index.js
-
       - name: Build host
         run: npm run build
 
