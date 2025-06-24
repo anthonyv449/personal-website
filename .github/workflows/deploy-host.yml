@@ -17,8 +17,17 @@ jobs:
           node-version: 18
           cache: "npm"
 
-      - name: Install dependencies
-        run: npm ci
+      - name: Remove npm cache
+        run: npm cache clean --force
+
+      - name: Remove local node_modules + lockfile
+        run: rm -rf node_modules package-lock.json
+
+      - name: Install fresh dependencies
+        run: npm install --force
+
+      - name: Verify ui-kit entry file exists
+        run: ls -la node_modules/@anthonyv449/ui-kit/dist/index.js
 
       - name: Build host
         run: npm run build
