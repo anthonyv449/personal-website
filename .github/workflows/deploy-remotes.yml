@@ -42,7 +42,7 @@ jobs:
       - name: Build changed remotes
         if: env.REMOTE_NAMES != ''
         run: |
-          REMOTE_NAMES="$REMOTE_NAMES" node scripts/buildAllRemotes.mjs
+          REMOTE_NAMES="$REMOTE_NAMES" npm run build:all
 
       - name: Azure Login
         if: env.REMOTE_NAMES != ''

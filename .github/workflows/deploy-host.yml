@@ -17,14 +17,11 @@ jobs:
           node-version: 18
           cache: "npm"
 
-      - name: Remove local ui-kit to use published version
-        run: rm -rf ui-kit
-
       - name: Install dependencies
         run: npm ci
 
       - name: Build host
-        run: node scripts/buildHost.mjs
+        run: npm run build
 
       - name: Copy public assets
         run: |

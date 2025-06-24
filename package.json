@@ -4,7 +4,8 @@
   "main": "./host/src/index.js",
   "workspaces": [
     "remotes/*",
-    "host"
+    "host",
+    "ui-kit"
   ],
   "babel": {
     "presets": [
