@@ -1,11 +1,11 @@
 {
   "name": "@anthonyv449/ui-kit",
-  "version": "1.3.4",
+  "version": "1.3.5",
   "description": "reusable UI components",
   "main": "dist/index.js",
   "module": "dist/index.js",
   "scripts": {
-    "build": "babel components --out-dir dist --extensions \".js,.jsx\""
+    "build": "babel src --out-dir dist --extensions \".js,.jsx\""
   },
   "author": "Anthony Omar Valenzuela",
   "license": "MIT",
