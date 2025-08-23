@@ -132,11 +132,22 @@ function createHostConfig(remotesMap) {
 function createRemoteConfig(remote) {
   try {
     // Assume remote.folder is provided in the remotes.json file to locate its package.json.
-    const remoteDeps = require(`../${remote.folder}/package.json`).dependencies;
+    const remotePkg = require(`../${remote.folder}/package.json`);
+    const remoteDeps = remotePkg.dependencies || {};
+    const remotePeerDeps = remotePkg.peerDependencies || {};
+    
     // Get the host's shared configuration to be used in remotes.
     const hostShared = generateShared();
-    // Merge host shared settings. This will only share the dependencies from the host.
-    const shared = mergeShared(hostShared, remoteDeps);
+    
+    // Merge host shared settings and include peer dependencies that are also in host shared
+    const shared = { ...hostShared };
+    
+    // Add peer dependencies that are in the host's shared list
+    Object.keys(remotePeerDeps).forEach(pkg => {
+      if (hostShared[pkg]) {
+        shared[pkg] = hostShared[pkg];
+      }
+    });
     let exposedModules = {
       [remote.name]: `./remotes/${remote.name.toLowerCase()}/index.js`,
     };
