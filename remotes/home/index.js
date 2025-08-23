@@ -22,7 +22,7 @@ const Home = () => {
   const meSectionComponent = <MeSection />;
 
   const componentsArray = [meSectionComponent];
-
+  //home
   return (
     <Grid
       container

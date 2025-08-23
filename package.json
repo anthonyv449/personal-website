@@ -4,8 +4,7 @@
   "main": "./host/src/index.js",
   "workspaces": [
     "remotes/*",
-    "host",
-    "ui-kit"
+    "host"
   ],
   "babel": {
     "presets": [
@@ -34,7 +33,7 @@
   "license": "ISC",
   "description": "",
   "dependencies": {
-    "@anthonyv449/ui-kit": "^1.3.6",
+    "@anthonyv449/ui-kit": "^1.3.9",
     "@azure/msal-browser": "^4.9.1",
     "@azure/msal-react": "^3.0.8",
     "@emotion/react": "^11.14.0",

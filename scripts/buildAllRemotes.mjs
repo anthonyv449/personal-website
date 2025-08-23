@@ -1,11 +1,14 @@
 import webpack from "webpack";
 import path from "path";
 import fs from "fs/promises";
+import { fileURLToPath } from "url";
 import { createRequire } from "module";
 import HtmlWebpackPlugin from "html-webpack-plugin";
 import ModuleFederationPlugin from "webpack/lib/container/ModuleFederationPlugin.js";
 
 const require = createRequire(import.meta.url);
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 async function loadRemotes() {
   const file = path.resolve(process.cwd(), "host/public/remotes.json");
