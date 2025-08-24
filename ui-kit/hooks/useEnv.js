@@ -6,7 +6,7 @@ export const NODE_ENV = process.env.NODE_ENV || "development";
 export const HOST_PATH = NODE_ENV === "production" ? "/host" : "";
 export const REMOTES_PATH = "/remotes";
 export const DEFAULT_DOMAIN =
-  NODE_ENV === "production" ? `https://cdn.${window.location.hostname}` : "";
+  NODE_ENV === "production" ? `https://uiremotes.blob.core.windows.net/$web` : "";
 // ── 2) Zustand store ─────────────────────────────────────────────
 export const useEnvStore = create((set) => ({
   domain: DEFAULT_DOMAIN,
