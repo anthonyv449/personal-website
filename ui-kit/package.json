@@ -4,6 +4,9 @@
   "description": "reusable UI components",
   "main": "dist/index.js",
   "module": "dist/index.js",
+  "files": [
+    "dist"
+  ],
   "scripts": {
     "build": "babel src --out-dir dist --extensions \".js,.jsx\""
   },

@@ -20,6 +20,7 @@ export const loader = async () => {
   const { loadArticles } = useArticleStore.getState();
   return loadArticles();
 };
+//writings
 const Writings = () => {
   //initiate remote change
   const navigate = useNavigate();

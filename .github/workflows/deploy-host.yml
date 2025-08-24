@@ -17,11 +17,10 @@ jobs:
           node-version: 18
           cache: "npm"
 
-      - name: Install dependencies
-        run: npm ci
-
-      - name: Check installed ui-kit version
-        run: npm list @anthonyv449/ui-kit
+      - name: Clean install from registry
+        run: |
+          rm -rf node_modules package-lock.json ui-kit
+          npm install --force
 
       - name: Build host
         run: npm run build
