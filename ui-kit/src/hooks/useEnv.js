@@ -41,8 +41,7 @@ const join = (prefix, path) => {
 };
 
 export const withHostPath = (path) => {
-  const { domain, hostPath } = useEnvStore.getState();
-  return join(domain + hostPath, path);
+  return join(DEFAULT_DOMAIN + HOST_PATH, path);
 };
 
 export const withRemotesPath = (path) => {
