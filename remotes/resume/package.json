@@ -10,7 +10,7 @@
   "author": "",
   "license": "ISC",
   "peerDependencies": {
-    "@anthonyv449/ui-kit": "^1.3.12",
+    "@anthonyv449/ui-kit": "^1.3.13",
     "@emotion/react": "^11.14.0",
     "@emotion/styled": "^11.14.0",
     "@mui/icons-material": "^6.4.1",
@@ -23,7 +23,7 @@
     "react-router-dom": "^7.1.3"
   },
   "devDependencies": {
-    "@anthonyv449/ui-kit": "^1.3.12",
+    "@anthonyv449/ui-kit": "^1.3.13",
     "@emotion/react": "^11.14.0",
     "@emotion/styled": "^11.14.0",
     "@mui/icons-material": "^6.4.1",
