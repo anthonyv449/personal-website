@@ -17,7 +17,7 @@ export const useEnvStore = create((set) => ({
   // optional runtime override via /env.json
   loadEnv: async () => {
     try {
-      const res = await withHostPath("/env.json");
+      const res = await fetch(withHostPath("/env.json"));
       if (!res.ok) throw new Error("env.json not found");
       const data = await res.json();
       set({
