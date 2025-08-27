@@ -27,9 +27,9 @@ function generateShared() {
 
     shared[pkg] = {
       singleton: true,
+      eager: true,
       requiredVersion: deps[pkg],
       strictVersion: true,
-      ...(pkg === "@anthonyv449/ui-kit" ? {} : { eager: true }),
     };
   });
 
@@ -78,6 +78,12 @@ function createHostConfig(remotesMap, shared) {
       ],
     },
     resolve: {
+      alias: {
+        "@anthonyv449/ui-kit": path.resolve(
+          __dirname,
+          "../node_modules/@anthonyv449/ui-kit"
+        ),
+      },
       extensions: [".js", ".jsx"],
       modules: [path.resolve(__dirname, "../node_modules"), "node_modules"],
     },

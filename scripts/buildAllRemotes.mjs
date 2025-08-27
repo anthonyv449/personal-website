@@ -32,9 +32,9 @@ function generateShared() {
 
     shared[pkg] = {
       singleton: true,
+      eager: true,
       requiredVersion: deps[pkg],
       strictVersion: true,
-      ...(pkg === "@anthonyv449/ui-kit" ? {} : { eager: true }),
     };
   });
 
