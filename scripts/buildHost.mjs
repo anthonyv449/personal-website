@@ -17,12 +17,12 @@ function generateShared() {
   const mfSharedList = hostPkg.mfShared || [];
 
   const shared = {};
+  // relaxed defaults for everything in mfShared
   mfSharedList.forEach((pkg) => {
     if (!deps[pkg]) {
       console.warn(`⚠️ Host mfShared package "${pkg}" is not listed in dependencies.`);
       return;
     }
-    // Relaxed, non-brittle sharing across host/remotes
     shared[pkg] = {
       singleton: true,
       eager: false,
@@ -30,6 +30,28 @@ function generateShared() {
       strictVersion: false,
     };
   });
+
+  // Explicit real versions for React & ReactDOM so share scope never publishes "0"
+  if (deps.react) {
+    shared["react"] = {
+      ...shared["react"],
+      version: deps.react,
+      requiredVersion: false,
+      strictVersion: false,
+      singleton: true,
+      eager: false,
+    };
+  }
+  if (deps["react-dom"]) {
+    shared["react-dom"] = {
+      ...shared["react-dom"],
+      version: deps["react-dom"],
+      requiredVersion: false,
+      strictVersion: false,
+      singleton: true,
+      eager: false,
+    };
+  }
 
   return shared;
 }
@@ -59,15 +81,10 @@ function createHostConfig(remotesMap, shared) {
           exclude: /node_modules/,
           use: {
             loader: "babel-loader",
-            options: {
-              presets: ["@babel/preset-env", "@babel/preset-react"],
-            },
+            options: { presets: ["@babel/preset-env", "@babel/preset-react"] },
           },
         },
-        {
-          test: /\.css$/,
-          use: ["style-loader", "css-loader"],
-        },
+        { test: /\.css$/, use: ["style-loader", "css-loader"] },
         {
           test: /\.svg$/,
           issuer: /\.[jt]sx?$/,
@@ -76,7 +93,7 @@ function createHostConfig(remotesMap, shared) {
       ],
     },
     resolve: {
-      // No alias for ui-kit in prod – resolve via node_modules to avoid masking version issues
+      // No alias for ui-kit in prod — resolve via node_modules
       extensions: [".js", ".jsx"],
       modules: [path.resolve(__dirname, "../node_modules"), "node_modules"],
     },

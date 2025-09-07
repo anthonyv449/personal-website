@@ -22,12 +22,12 @@ function generateShared() {
   const mfSharedList = hostPkg.mfShared || [];
 
   const shared = {};
+  // relaxed defaults for everything in mfShared (match host)
   mfSharedList.forEach((pkg) => {
     if (!deps[pkg]) {
       console.warn(`⚠️ Host mfShared package "${pkg}" is not listed in dependencies.`);
       return;
     }
-    // Match host relaxed policy to prevent prod “resolving fallback…” issues
     shared[pkg] = {
       singleton: true,
       eager: false,
@@ -36,10 +36,28 @@ function generateShared() {
     };
   });
 
+  // Remotes: do NOT bundle React — consume host’s copy
+  shared["react"] = {
+    ...(shared["react"] || {}),
+    singleton: true,
+    eager: false,
+    requiredVersion: false,
+    strictVersion: false,
+    import: false,
+  };
+  shared["react-dom"] = {
+    ...(shared["react-dom"] || {}),
+    singleton: true,
+    eager: false,
+    requiredVersion: false,
+    strictVersion: false,
+    import: false,
+  };
+
   return shared;
 }
 
-// Currently we just pass-through; hook to customize per-remote if ever needed
+// currently passthrough, but keeps the hook if you need per-remote tweaks later
 function mergeShared(hostShared) {
   return hostShared;
 }
@@ -74,15 +92,10 @@ function createRemoteConfig(remote, hostShared, version) {
           exclude: /node_modules/,
           use: {
             loader: "babel-loader",
-            options: {
-              presets: ["@babel/preset-env", "@babel/preset-react"],
-            },
+            options: { presets: ["@babel/preset-env", "@babel/preset-react"] },
           },
         },
-        {
-          test: /\.css$/,
-          use: ["style-loader", "css-loader"],
-        },
+        { test: /\.css$/, use: ["style-loader", "css-loader"] },
         {
           test: /\.svg$/,
           issuer: /\.[jt]sx?$/,
