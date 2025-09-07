@@ -24,47 +24,44 @@ function generateShared() {
   const shared = {};
   mfSharedList.forEach((pkg) => {
     if (!deps[pkg]) {
-      console.warn(
-        `⚠️ Host mfShared package "${pkg}" is not listed in dependencies.`
-      );
+      console.warn(`⚠️ Host mfShared package "${pkg}" is not listed in dependencies.`);
       return;
     }
-
+    // Match host relaxed policy to prevent prod “resolving fallback…” issues
     shared[pkg] = {
       singleton: true,
-      eager: true,
-      requiredVersion: deps[pkg],
-      strictVersion: true,
+      eager: false,
+      requiredVersion: false,
+      strictVersion: false,
     };
   });
 
   return shared;
 }
 
+// Currently we just pass-through; hook to customize per-remote if ever needed
 function mergeShared(hostShared) {
   return hostShared;
 }
 
 function createRemoteConfig(remote, hostShared, version) {
-  let exposedModules = {
+  const root = process.cwd();
+
+  const exposedModules = {
     [remote.name]: `./remotes/${remote.name.toLowerCase()}/index.js`,
   };
   if (remote.children) {
-    remote.children.forEach(
-      (child) =>
-        (exposedModules[
-          child.title
-        ] = `./remotes/${remote.name.toLowerCase()}/${child.title}.js`)
-    );
+    remote.children.forEach((child) => {
+      exposedModules[child.title] =
+        `./remotes/${remote.name.toLowerCase()}/${child.title}.js`;
+    });
   }
+
   return {
     mode: "production",
-    entry: path.resolve(
-      process.cwd(),
-      `./remotes/${remote.name.toLowerCase()}/index.js`
-    ),
+    entry: path.resolve(root, `./remotes/${remote.name.toLowerCase()}/index.js`),
     output: {
-      path: path.resolve(process.cwd(), "dist", remote.name, version),
+      path: path.resolve(root, "dist", remote.name, version),
       filename: "bundle.js",
       publicPath: "auto",
       library: { type: "var", name: remote.name },
@@ -114,11 +111,7 @@ function runWebpack(config, label) {
     webpack(config, (err, stats) => {
       if (err || stats.hasErrors()) {
         console.error(`❌ ${label} build failed`);
-        console.error(
-          stats.toString({
-            colors: true,
-          })
-        );
+        console.error(stats?.toString?.({ colors: true }) ?? err);
         return reject(err || new Error("Build error"));
       }
       console.log(`✅ ${label} built`);
@@ -129,6 +122,7 @@ function runWebpack(config, label) {
 
 async function buildAllRemotes() {
   let remotes = await loadRemotes();
+
   const only = process.env.REMOTE_NAMES
     ? process.env.REMOTE_NAMES.split(/[,\s]+/).filter(Boolean)
     : null;
@@ -137,24 +131,24 @@ async function buildAllRemotes() {
       (r) => only.includes(r.name) || only.includes(r.name.toLowerCase())
     );
   }
+
   const hostShared = generateShared();
 
-  const remotesMap = {};
   for (const r of remotes) {
     const pkg = require(path.resolve(process.cwd(), r.folder, "package.json"));
     const version = pkg.version;
+
     await runWebpack(
       createRemoteConfig(r, hostShared, version),
       `${r.name} v${version}`
     );
+
     const versionPath = path.resolve(process.cwd(), "dist", r.name, version);
     const latestPath = path.resolve(process.cwd(), "dist", r.name, "latest");
     await fs.rm(latestPath, { recursive: true, force: true });
     await fs.cp(versionPath, latestPath, { recursive: true });
-    remotesMap[r.name] = `${
-      r.name
-    }@/remotes/${r.name.toLowerCase()}/latest/remoteEntry.js`;
   }
+
   console.log("🎉 All builds done.");
 }
 

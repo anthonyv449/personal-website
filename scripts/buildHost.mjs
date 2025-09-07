@@ -19,17 +19,15 @@ function generateShared() {
   const shared = {};
   mfSharedList.forEach((pkg) => {
     if (!deps[pkg]) {
-      console.warn(
-        `⚠️ Host mfShared package "${pkg}" is not listed in dependencies.`
-      );
+      console.warn(`⚠️ Host mfShared package "${pkg}" is not listed in dependencies.`);
       return;
     }
-
+    // Relaxed, non-brittle sharing across host/remotes
     shared[pkg] = {
       singleton: true,
-      eager: true,
-      requiredVersion: deps[pkg],
-      strictVersion: true,
+      eager: false,
+      requiredVersion: false,
+      strictVersion: false,
     };
   });
 
@@ -78,12 +76,7 @@ function createHostConfig(remotesMap, shared) {
       ],
     },
     resolve: {
-      alias: {
-        "@anthonyv449/ui-kit": path.resolve(
-          __dirname,
-          "../node_modules/@anthonyv449/ui-kit"
-        ),
-      },
+      // No alias for ui-kit in prod – resolve via node_modules to avoid masking version issues
       extensions: [".js", ".jsx"],
       modules: [path.resolve(__dirname, "../node_modules"), "node_modules"],
     },
@@ -114,7 +107,7 @@ function runWebpack(config, name) {
     webpack(config, (err, stats) => {
       if (err || stats.hasErrors()) {
         console.error(`❌ Error building ${name}`);
-        console.error(stats.toString({ colors: true }));
+        console.error(stats?.toString?.({ colors: true }) ?? err);
         return reject(err || new Error("Build error"));
       }
       console.log(`✅ ${name} built successfully.`);
@@ -122,15 +115,14 @@ function runWebpack(config, name) {
     });
   });
 }
-// all we need from remotes.json here is name
+
 async function buildHost() {
   const remotes = await loadRemotes();
   const remotesMap = {};
   remotes.forEach((r) => {
-    remotesMap[r.name] = `${
-      r.name
-    }@/remotes/${r.name.toLowerCase()}/latest/remoteEntry.js`;
+    remotesMap[r.name] = `${r.name}@/remotes/${r.name.toLowerCase()}/latest/remoteEntry.js`;
   });
+
   const shared = generateShared();
   const hostConfig = createHostConfig(remotesMap, shared);
   await runWebpack(hostConfig, "host");
