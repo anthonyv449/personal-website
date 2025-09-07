@@ -31,27 +31,26 @@ function generateShared() {
     };
   });
 
-  // Explicit real versions for React & ReactDOM so share scope never publishes "0"
-  if (deps.react) {
-    shared["react"] = {
-      ...shared["react"],
-      version: deps.react,
-      requiredVersion: false,
-      strictVersion: false,
+// Ensure the share scope publishes *real versions* for these libs
+for (const p of [
+  'react',
+  'react-dom',
+  '@mui/material',
+  '@mui/icons-material',
+  '@emotion/react',
+  '@emotion/styled',
+]) {
+  if (deps[p]) {
+    shared[p] = {
+      ...(shared[p] || {}),
       singleton: true,
       eager: false,
-    };
-  }
-  if (deps["react-dom"]) {
-    shared["react-dom"] = {
-      ...shared["react-dom"],
-      version: deps["react-dom"],
       requiredVersion: false,
       strictVersion: false,
-      singleton: true,
-      eager: false,
+      version: deps[p],        // 👈 publish actual semver to share scope
     };
   }
+}
 
   return shared;
 }

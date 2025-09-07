@@ -37,22 +37,24 @@ function generateShared() {
   });
 
   // Remotes: do NOT bundle React — consume host’s copy
-  shared["react"] = {
-    ...(shared["react"] || {}),
+  // Remotes must *not* bundle these; consume host’s copies
+for (const p of [
+  'react',
+  'react-dom',
+  '@mui/material',
+  '@mui/icons-material',
+  '@emotion/react',
+  '@emotion/styled',
+]) {
+  shared[p] = {
+    ...(shared[p] || {}),
     singleton: true,
     eager: false,
     requiredVersion: false,
     strictVersion: false,
-    import: false,
+    import: false,            // 👈 don’t import locally; pull from host
   };
-  shared["react-dom"] = {
-    ...(shared["react-dom"] || {}),
-    singleton: true,
-    eager: false,
-    requiredVersion: false,
-    strictVersion: false,
-    import: false,
-  };
+}
 
   return shared;
 }
