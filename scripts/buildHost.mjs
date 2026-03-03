@@ -11,6 +11,25 @@ const require = createRequire(import.meta.url);
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
+function getInstalledVersion(pkg) {
+  try {
+    return require(`${pkg}/package.json`).version;
+  } catch {
+    try {
+      const resolved = require.resolve(pkg);
+      let dir = path.dirname(resolved);
+      while (dir !== path.dirname(dir)) {
+        try {
+          const pj = require(path.join(dir, "package.json"));
+          if (pj.name === pkg) return pj.version;
+        } catch {}
+        dir = path.dirname(dir);
+      }
+    } catch {}
+  }
+  return undefined;
+}
+
 function generateShared() {
   const hostPkg = require("../package.json");
   const deps = hostPkg.dependencies || {};
