@@ -36,24 +36,40 @@ function generateShared() {
   const mfSharedList = hostPkg.mfShared || [];
 
   const shared = {};
+  // relaxed defaults for everything in mfShared
   mfSharedList.forEach((pkg) => {
     if (!deps[pkg]) {
-      console.warn(
-        `⚠️ Host mfShared package "${pkg}" is not listed in dependencies.`
-      );
+      console.warn(`⚠️ Host mfShared package "${pkg}" is not listed in dependencies.`);
       return;
     }
-
-    const version = getInstalledVersion(pkg);
-
     shared[pkg] = {
       singleton: true,
-      eager: true,
-      requiredVersion: deps[pkg],
-      strictVersion: true,
-      ...(version && { version }),
+      eager: false,
+      requiredVersion: false,
+      strictVersion: false,
     };
   });
+
+// Ensure the share scope publishes *real versions* for these libs
+for (const p of [
+  'react',
+  'react-dom',
+  '@mui/material',
+  '@mui/icons-material',
+  '@emotion/react',
+  '@emotion/styled',
+]) {
+  if (deps[p]) {
+    shared[p] = {
+      ...(shared[p] || {}),
+      singleton: true,
+      eager: false,
+      requiredVersion: false,
+      strictVersion: false,
+      version: deps[p],        // 👈 publish actual semver to share scope
+    };
+  }
+}
 
   return shared;
 }
@@ -83,15 +99,10 @@ function createHostConfig(remotesMap, shared) {
           exclude: /node_modules/,
           use: {
             loader: "babel-loader",
-            options: {
-              presets: ["@babel/preset-env", "@babel/preset-react"],
-            },
+            options: { presets: ["@babel/preset-env", "@babel/preset-react"] },
           },
         },
-        {
-          test: /\.css$/,
-          use: ["style-loader", "css-loader"],
-        },
+        { test: /\.css$/, use: ["style-loader", "css-loader"] },
         {
           test: /\.svg$/,
           issuer: /\.[jt]sx?$/,
@@ -100,6 +111,7 @@ function createHostConfig(remotesMap, shared) {
       ],
     },
     resolve: {
+      // No alias for ui-kit in prod — resolve via node_modules
       extensions: [".js", ".jsx"],
       modules: [path.resolve(__dirname, "../node_modules"), "node_modules"],
     },
@@ -130,7 +142,7 @@ function runWebpack(config, name) {
     webpack(config, (err, stats) => {
       if (err || stats.hasErrors()) {
         console.error(`❌ Error building ${name}`);
-        console.error(stats.toString({ colors: true }));
+        console.error(stats?.toString?.({ colors: true }) ?? err);
         return reject(err || new Error("Build error"));
       }
       console.log(`✅ ${name} built successfully.`);
@@ -138,15 +150,14 @@ function runWebpack(config, name) {
     });
   });
 }
-// all we need from remotes.json here is name
+
 async function buildHost() {
   const remotes = await loadRemotes();
   const remotesMap = {};
   remotes.forEach((r) => {
-    remotesMap[r.name] = `${
-      r.name
-    }@/remotes/${r.name.toLowerCase()}/latest/remoteEntry.js`;
+    remotesMap[r.name] = `${r.name}@/remotes/${r.name.toLowerCase()}/latest/remoteEntry.js`;
   });
+
   const shared = generateShared();
   const hostConfig = createHostConfig(remotesMap, shared);
   await runWebpack(hostConfig, "host");
