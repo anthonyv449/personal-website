@@ -16,6 +16,25 @@ async function loadRemotes() {
   return JSON.parse(json);
 }
 
+function getInstalledVersion(pkg) {
+  try {
+    return require(`${pkg}/package.json`).version;
+  } catch {
+    try {
+      const resolved = require.resolve(pkg);
+      let dir = path.dirname(resolved);
+      while (dir !== path.dirname(dir)) {
+        try {
+          const pj = require(path.join(dir, "package.json"));
+          if (pj.name === pkg) return pj.version;
+        } catch {}
+        dir = path.dirname(dir);
+      }
+    } catch {}
+  }
+  return undefined;
+}
+
 function generateShared() {
   const hostPkg = require("../package.json");
   const deps = hostPkg.dependencies || {};
@@ -30,11 +49,14 @@ function generateShared() {
       return;
     }
 
+    const version = getInstalledVersion(pkg);
+
     shared[pkg] = {
       singleton: true,
       eager: true,
       requiredVersion: deps[pkg],
       strictVersion: true,
+      ...(version && { version }),
     };
   });
 
