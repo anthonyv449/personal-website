@@ -137,6 +137,9 @@ function createHostConfig(remotesMap) {
       ],
     },
     resolve: {
+      alias: {
+        "@anthonyv449/ui-kit": path.resolve(__dirname, "../ui-kit/src"),
+      },
       extensions: [".js", ".jsx"],
       modules: [path.resolve(__dirname, "../node_modules"), "node_modules"],
     },
@@ -215,6 +218,9 @@ function createRemoteConfig(remote) {
         ],
       },
       resolve: {
+        alias: {
+          "@anthonyv449/ui-kit": path.resolve(__dirname, "../ui-kit/src"),
+        },
         extensions: [".js", ".jsx"],
         modules: [path.resolve(__dirname, "../node_modules"), "node_modules"],
       },

@@ -22,7 +22,6 @@ jobs:
 
       - name: Clean install from registry
         run: |
-          rm -rf ui-kit
           npm ci --force
 
       - name: Build And Deploy
