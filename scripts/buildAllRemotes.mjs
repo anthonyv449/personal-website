@@ -41,44 +41,28 @@ function generateShared() {
   const mfSharedList = hostPkg.mfShared || [];
 
   const shared = {};
-  // relaxed defaults for everything in mfShared (match host)
   mfSharedList.forEach((pkg) => {
     if (!deps[pkg]) {
-      console.warn(`⚠️ Host mfShared package "${pkg}" is not listed in dependencies.`);
+      console.warn(
+        `⚠️ Host mfShared package "${pkg}" is not listed in dependencies.`
+      );
       return;
     }
+
+    const version = getInstalledVersion(pkg);
+
     shared[pkg] = {
       singleton: true,
       eager: false,
-      requiredVersion: false,
+      requiredVersion: deps[pkg],
       strictVersion: false,
+      ...(version && { version }),
     };
   });
-
-  // Remotes: do NOT bundle React — consume host’s copy
-  // Remotes must *not* bundle these; consume host’s copies
-for (const p of [
-  'react',
-  'react-dom',
-  '@mui/material',
-  '@mui/icons-material',
-  '@emotion/react',
-  '@emotion/styled',
-]) {
-  shared[p] = {
-    ...(shared[p] || {}),
-    singleton: true,
-    eager: false,
-    requiredVersion: false,
-    strictVersion: false,
-    import: false,            // 👈 don’t import locally; pull from host
-  };
-}
 
   return shared;
 }
 
-// currently passthrough, but keeps the hook if you need per-remote tweaks later
 function mergeShared(hostShared) {
   return hostShared;
 }

@@ -36,40 +36,22 @@ function generateShared() {
   const mfSharedList = hostPkg.mfShared || [];
 
   const shared = {};
-  // relaxed defaults for everything in mfShared
   mfSharedList.forEach((pkg) => {
     if (!deps[pkg]) {
       console.warn(`⚠️ Host mfShared package "${pkg}" is not listed in dependencies.`);
       return;
     }
+
+    const version = getInstalledVersion(pkg);
+
     shared[pkg] = {
       singleton: true,
-      eager: false,
-      requiredVersion: false,
-      strictVersion: false,
+      eager: true,
+      requiredVersion: deps[pkg],
+      strictVersion: true,
+      ...(version && { version }),
     };
   });
-
-// Ensure the share scope publishes *real versions* for these libs
-for (const p of [
-  'react',
-  'react-dom',
-  '@mui/material',
-  '@mui/icons-material',
-  '@emotion/react',
-  '@emotion/styled',
-]) {
-  if (deps[p]) {
-    shared[p] = {
-      ...(shared[p] || {}),
-      singleton: true,
-      eager: false,
-      requiredVersion: false,
-      strictVersion: false,
-      version: deps[p],        // 👈 publish actual semver to share scope
-    };
-  }
-}
 
   return shared;
 }

@@ -36,9 +36,10 @@ jobs:
           cache: "npm"
 
       - name: Clean install from registry
+        if: env.REMOTE_NAMES != ''
         run: |
-          rm -rf node_modules package-lock.json ui-kit
-          npm install --force
+          rm -rf ui-kit
+          npm ci --force
 
       - name: Build changed remotes
         if: env.REMOTE_NAMES != ''

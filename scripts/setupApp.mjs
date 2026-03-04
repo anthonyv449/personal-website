@@ -69,9 +69,11 @@ function generateShared() {
  * so the remote will use its own copy.
  */
 function mergeShared(hostShared, remoteDeps) {
-  // For packages defined in hostShared, use those settings.
-  // Leave out any remote-only packages.
-  return { ...hostShared };
+  const remoteShared = {};
+  for (const [pkg, config] of Object.entries(hostShared)) {
+    remoteShared[pkg] = { ...config, eager: false, strictVersion: false };
+  }
+  return remoteShared;
 }
 
 /**
