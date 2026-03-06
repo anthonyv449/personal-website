@@ -1,4 +1,4 @@
-import React, { Suspense, useState, useEffect } from "react";
+import React, { Suspense, useState, useEffect, useMemo, useCallback } from "react";
 import {
   createBrowserRouter,
   RouterProvider,
@@ -9,7 +9,7 @@ import { HelmetProvider, Helmet } from "react-helmet-async";
 import { ThemeProvider, CssBaseline, Grid2 as Grid } from "@mui/material";
 import Navbar from "./Navbar.js";
 import Footer from "./Footer.js";
-import theme from "./theme.js";
+import { createAppTheme } from "./theme.js";
 import { ThemeContext } from "./ThemeContext.js";
 import { MsalProvider } from "@azure/msal-react";
 import { msalInstance } from "./msalConfig.js";
@@ -134,9 +134,21 @@ export default function App() {
   const [remotes, setRemotes] = useState(null);
   const [hasLatest, setHasLatest] = useState(false);
   const [latestDate, setLatestDate] = useState(null);
+  const [mode, setMode] = useState(
+    () => localStorage.getItem("theme-mode") || "dark"
+  );
   const { loaded, loadEnv, apiPath } = useEnvStore();
   const { loadUser } = useGlobalData();
   const isDev = process.env.NODE_ENV === "development";
+
+  const theme = useMemo(() => createAppTheme(mode), [mode]);
+  const toggleMode = useCallback(() => {
+    setMode((prev) => {
+      const next = prev === "dark" ? "light" : "dark";
+      localStorage.setItem("theme-mode", next);
+      return next;
+    });
+  }, []);
 
   // Load environment, then user
   useEffect(() => {
@@ -276,7 +288,7 @@ export default function App() {
 
   return (
     <MsalProvider instance={msalInstance}>
-      <ThemeContext.Provider value={theme}>
+      <ThemeContext.Provider value={{ mode, toggleMode }}>
         <ThemeProvider theme={theme}>
           <CssBaseline />
           <RouterProvider router={router} />

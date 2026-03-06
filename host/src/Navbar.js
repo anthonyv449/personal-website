@@ -4,16 +4,22 @@ import {
   useTheme,
   Grid2 as Grid,
   Link as MuiLink,
+  IconButton,
+  Tooltip,
 } from "@mui/material";
+import LightModeIcon from "@mui/icons-material/LightMode";
+import DarkModeIcon from "@mui/icons-material/DarkMode";
 import { NavLink } from "react-router-dom";
 import { useMsal } from "@azure/msal-react";
 import Logo from "../assets/logo.svg";
 import { useGlobalData, withApiPath } from "@anthonyv449/ui-kit";
+import { useThemeMode } from "./ThemeContext.js";
 
 const Navbar = ({ pages }) => {
   const theme = useTheme();
   const { instance } = useMsal();
   const { user, setUser, logoutUser } = useGlobalData();
+  const { mode, toggleMode } = useThemeMode();
 
   const handleLogin = async () => {
     try {
@@ -106,6 +112,15 @@ const Navbar = ({ pages }) => {
             Sign in
           </Button>
         )}
+        <Tooltip title={mode === "dark" ? "Switch to light mode" : "Switch to dark mode"}>
+          <IconButton onClick={toggleMode} size="small" sx={{ ml: 0.5 }}>
+            {mode === "dark" ? (
+              <LightModeIcon fontSize="small" />
+            ) : (
+              <DarkModeIcon fontSize="small" />
+            )}
+          </IconButton>
+        </Tooltip>
       </Grid>
     </Grid>
   );

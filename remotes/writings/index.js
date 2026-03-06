@@ -3,8 +3,9 @@ import {
   Grid2 as Grid,
   Card,
   CardContent,
-  Typography,
   CardActionArea,
+  Typography,
+  Box,
   Button,
   Dialog,
   DialogTitle,
@@ -104,27 +105,40 @@ const Writings = () => {
           </Button>
         </DialogActions>
       </Dialog>
-      <Grid container spacing={2} padding={3}>
+      <Grid container spacing={3} padding="3rem 2rem">
         {articles.length > 0 ? (
           articles.map((article) => (
             <Grid key={article.Slug}>
-              <Card>
-                <CardContent sx={{ height: "40%" }}>
-                  <Typography variant="caption">
-                    {article.Content.slice(0, 50).replace(/#+/, "").toString()}
-                    ...
-                  </Typography>
-                </CardContent>
+              <Card sx={{ minWidth: "280px", maxWidth: "360px" }}>
                 <CardActionArea
                   onClick={() => {
                     navigate(`/writings/${article.Slug}`);
                     setCurrentArticleBySlug(article.Slug);
                   }}
-                  sx={{ height: "60%" }}
                 >
-                  <CardContent>
-                    <Typography variant="h6">{article.Title}</Typography>
-                  </CardContent>
+                  <Box sx={{ display: "flex" }}>
+                    <Box
+                      sx={{
+                        width: "3px",
+                        flexShrink: 0,
+                        backgroundColor: "#81d3ef",
+                        borderRadius: "3px 0 0 3px",
+                      }}
+                    />
+                    <CardContent sx={{ flex: 1 }}>
+                      <Typography variant="h6" sx={{ mb: 1 }}>
+                        {article.Title}
+                      </Typography>
+                      <Typography variant="body2">
+                        {article.Content.slice(0, 80).replace(/#+/, "").trim()}...
+                      </Typography>
+                      {article.Author && (
+                        <Typography variant="caption" sx={{ display: "block", mt: 1.5 }}>
+                          {article.Author}
+                        </Typography>
+                      )}
+                    </CardContent>
+                  </Box>
                 </CardActionArea>
               </Card>
             </Grid>

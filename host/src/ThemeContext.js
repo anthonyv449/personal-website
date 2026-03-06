@@ -1,5 +1,10 @@
-import { createContext } from "react";
-import theme from "./theme.js"; // Import shared theme
+import { createContext, useContext } from "react";
 
-// Create a context to hold the theme
-export const ThemeContext = createContext(theme);
+export const ThemeContext = createContext({
+  mode: "dark",
+  toggleMode: () => {},
+});
+
+export function useThemeMode() {
+  return useContext(ThemeContext);
+}
