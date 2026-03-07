@@ -14,5 +14,10 @@
     "port": 3003,
     "folder": "./remotes/writings/",
     "children": [{ "title": "Article" }]
+  },
+  {
+    "name": "Books",
+    "port": 3004,
+    "folder": "./remotes/books/"
   }
 ]
