@@ -14,19 +14,50 @@ jobs:
           fetch-depth: 0
 
       - name: Detect changed remotes
-        id: detect
         shell: bash
         run: |
           base="${{ github.event.before }}"
-          if [ -z "$base" ]; then
-            base=$(git rev-parse HEAD^)
+          if [ -z "$base" ] || [ "$base" = "0000000000000000000000000000000000000000" ]; then
+            base=$(git rev-parse HEAD^ 2>/dev/null || echo "")
           fi
-          dirs=$(git diff --name-only "$base" "$GITHUB_SHA" -- remotes | awk -F/ '/^remotes\/[^\/]+\//{print $2}' | sort -u | xargs)
-          echo "REMOTE_NAMES=$dirs" >> $GITHUB_ENV
+          if [ -n "$base" ]; then
+            dirs=$(git diff --name-only "$base" "$GITHUB_SHA" -- remotes | awk -F/ '/^remotes\/[^\/]+\//{print $2}' | sort -u | xargs)
+          else
+            dirs=""
+          fi
+          echo "CHANGED_REMOTES=$dirs" >> $GITHUB_ENV
 
-      - name: Exit if no remote changes
+      - name: Azure Login
+        uses: azure/login@v1
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+      - name: Ensure $web container exists
+        uses: azure/CLI@v1
+        with:
+          inlineScript: |
+            az storage container create --account-name uiremotes -n '$web' --auth-mode login
+
+      - name: Detect new remotes missing from storage
+        uses: azure/CLI@v1
+        with:
+          inlineScript: |
+            changed="$CHANGED_REMOTES"
+            all_remotes=$(jq -r '.[].name' host/public/remotes.json | tr '[:upper:]' '[:lower:]')
+            for remote in $all_remotes; do
+              count=$(az storage blob list --account-name uiremotes --container-name '$web' --prefix "remotes/${remote}/latest/" --auth-mode login --num-results 1 -o tsv 2>/dev/null | wc -l)
+              if [ "$count" -eq 0 ]; then
+                if ! echo " $changed " | grep -q " $remote "; then
+                  changed="$changed $remote"
+                  echo "New remote detected: $remote"
+                fi
+              fi
+            done
+            echo "REMOTE_NAMES=$(echo $changed | xargs)" >> $GITHUB_ENV
+
+      - name: Exit if no remotes to build
         if: env.REMOTE_NAMES == ''
-        run: echo 'No remote changes detected.'
+        run: echo 'No changed or new remotes detected.'
 
       - name: Setup Node.js
         if: env.REMOTE_NAMES != ''
@@ -37,26 +68,11 @@ jobs:
 
       - name: Clean install from registry
         if: env.REMOTE_NAMES != ''
-        run: |
-          npm ci --force
+        run: npm ci --force
 
-      - name: Build changed remotes
+      - name: Build remotes
         if: env.REMOTE_NAMES != ''
-        run: |
-          REMOTE_NAMES="$REMOTE_NAMES" npm run build:all
-
-      - name: Azure Login
-        if: env.REMOTE_NAMES != ''
-        uses: azure/login@v1
-        with:
-          creds: ${{ secrets.AZURE_CREDENTIALS }}
-
-      - name: Ensure $web container exists
-        if: env.REMOTE_NAMES != ''
-        uses: azure/CLI@v1
-        with:
-          inlineScript: |
-            az storage container create --account-name uiremotes -n '$web' --auth-mode login
+        run: REMOTE_NAMES="$REMOTE_NAMES" npm run build:all
 
       - name: Upload remotes to Azure Storage
         if: env.REMOTE_NAMES != ''
