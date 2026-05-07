@@ -4,6 +4,11 @@ on:
   push:
     branches: [main]
   workflow_dispatch:
+    inputs:
+      build_all_remotes:
+        description: "Build every remote in remotes.json (recovery if git diff or storage check skipped a remote)"
+        type: boolean
+        default: false
 
 jobs:
   build-and-deploy:
@@ -16,14 +21,19 @@ jobs:
       - name: Detect changed remotes
         shell: bash
         run: |
-          base="${{ github.event.before }}"
-          if [ -z "$base" ] || [ "$base" = "0000000000000000000000000000000000000000" ]; then
-            base=$(git rev-parse HEAD^ 2>/dev/null || echo "")
-          fi
-          if [ -n "$base" ]; then
-            dirs=$(git diff --name-only "$base" "$GITHUB_SHA" -- remotes | awk -F/ '/^remotes\/[^\/]+\//{print $2}' | sort -u | xargs)
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ] && [ "${{ github.event.inputs.build_all_remotes }}" = "true" ]; then
+            dirs=$(jq -r '.[].name | ascii_downcase' host/public/remotes.json | xargs)
+            echo "Building all remotes (workflow_dispatch): $dirs"
           else
-            dirs=""
+            base="${{ github.event.before }}"
+            if [ -z "$base" ] || [ "$base" = "0000000000000000000000000000000000000000" ]; then
+              base=$(git rev-parse HEAD^ 2>/dev/null || echo "")
+            fi
+            if [ -n "$base" ]; then
+              dirs=$(git diff --name-only "$base" "$GITHUB_SHA" -- remotes | awk -F/ '/^remotes\/[^\/]+\//{print $2}' | sort -u | xargs)
+            else
+              dirs=""
+            fi
           fi
           echo "CHANGED_REMOTES=$dirs" >> $GITHUB_ENV
 
@@ -45,11 +55,12 @@ jobs:
             changed="$CHANGED_REMOTES"
             all_remotes=$(jq -r '.[].name' host/public/remotes.json | tr '[:upper:]' '[:lower:]')
             for remote in $all_remotes; do
-              count=$(az storage blob list --account-name uiremotes --container-name '$web' --prefix "remotes/${remote}/latest/" --auth-mode login --num-results 1 -o tsv 2>/dev/null | wc -l)
-              if [ "$count" -eq 0 ]; then
+              # Require remoteEntry.js — a prior buggy upload could leave only .init placeholders
+              has_entry=$(az storage blob list --account-name uiremotes --container-name '$web' --prefix "remotes/${remote}/latest/" --auth-mode login -o tsv 2>/dev/null | grep -c 'remoteEntry\.js' || true)
+              if [ "$has_entry" -eq 0 ]; then
                 if ! echo " $changed " | grep -q " $remote "; then
                   changed="$changed $remote"
-                  echo "New remote detected: $remote"
+                  echo "Remote missing remoteEntry.js in storage (will build): $remote"
                 fi
               fi
             done
@@ -82,10 +93,20 @@ jobs:
             tmpfile=$(mktemp)
             for remote in $REMOTE_NAMES; do
               lower=$(echo "$remote" | tr '[:upper:]' '[:lower:]')
-              remote_cap=${remote^}
+              # Must match webpack output path: dist/<exact name from remotes.json>/<version>
+              # (bash ${remote^} only capitalizes first letter — breaks "HumanProof" → wrong folder)
+              remote_name=$(jq -r --arg l "$lower" '.[] | select(.name | ascii_downcase == $l) | .name' host/public/remotes.json)
+              if [ -z "$remote_name" ] || [ "$remote_name" = "null" ]; then
+                echo "::error::Remote '$lower' not found in host/public/remotes.json"
+                exit 1
+              fi
               version=$(grep -oP '"version":\s*"\K[^" ]+' "remotes/${lower}/package.json")
-              src="dist/${remote_cap}/${version}"
-              mkdir -p "$src"
+              src="dist/${remote_name}/${version}"
+              if [ ! -f "$src/remoteEntry.js" ]; then
+                echo "::error::Expected $src/remoteEntry.js missing — build output path mismatch?"
+                ls -la "$src" 2>/dev/null || echo "(directory missing)"
+                exit 1
+              fi
               az storage blob upload --account-name uiremotes --container-name '$web' --file "$tmpfile" --name "remotes/${lower}/${version}/.init" --overwrite --auth-mode login
               az storage blob upload --account-name uiremotes --container-name '$web' --file "$tmpfile" --name "remotes/${lower}/latest/.init" --overwrite --auth-mode login
               az storage blob upload-batch --account-name uiremotes -s "$src" -d '$web' --destination-path "remotes/${lower}/${version}" --overwrite --auth-mode login
