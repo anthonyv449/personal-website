@@ -63,26 +63,40 @@ const Navbar = ({ pages }) => {
         />
       </Grid>
       <Grid size="auto">
-        {pages.map((page) => (
-          <MuiLink
-            key={page.title.toLowerCase()}
-            component={NavLink}
-            to={page.path}
-            sx={{
-              textDecoration: "none",
-              color: theme.palette.primary.main,
-              marginRight: "1rem",
-              borderRadius: "0.4rem",
-              padding: ".125rem .5rem",
-              "&.active": {
-                color: `${theme.palette.primary.hoverText}`,
-                backgroundColor: `${theme.palette.greys.default}`,
-              },
-            }}
-          >
-            {page.title}
-          </MuiLink>
-        ))}
+        {pages.map((page) => {
+          const linkSx = {
+            textDecoration: "none",
+            color: theme.palette.primary.main,
+            marginRight: "1rem",
+            borderRadius: "0.4rem",
+            padding: ".125rem .5rem",
+            "&.active": {
+              color: `${theme.palette.primary.hoverText}`,
+              backgroundColor: `${theme.palette.greys.default}`,
+            },
+          };
+          if (page.staticHref) {
+            return (
+              <MuiLink
+                key={page.title.toLowerCase()}
+                href={page.staticHref}
+                sx={linkSx}
+              >
+                {page.title}
+              </MuiLink>
+            );
+          }
+          return (
+            <MuiLink
+              key={page.title.toLowerCase()}
+              component={NavLink}
+              to={page.path}
+              sx={linkSx}
+            >
+              {page.title}
+            </MuiLink>
+          );
+        })}
         {user ? (
           <Button
             onClick={handleLogout}

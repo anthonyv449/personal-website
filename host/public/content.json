@@ -18,6 +18,10 @@
           "exposedModule": "Article"
         }
       ]
+    },
+    {
+      "title": "HumanProof",
+      "path": "/humanproof"
     }
   ]
 }
