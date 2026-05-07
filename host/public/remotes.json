@@ -19,5 +19,10 @@
     "name": "Books",
     "port": 3004,
     "folder": "./remotes/books/"
+  },
+  {
+    "name": "HumanProof",
+    "port": 3005,
+    "folder": "./remotes/humanproof/"
   }
 ]

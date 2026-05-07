@@ -290,16 +290,22 @@ async function setupApp() {
       return;
     }
 
-    // Prompt user to select remotes
-    const { selectedNames } = await inquirer.prompt([
-      {
-        type: "checkbox",
-        name: "selectedNames",
-        message: "Select which remotes to run:",
-        choices: remotes.map((r) => r.name),
-        default: [],
-      },
-    ]);
+    const envSelectedNames = process.env.REMOTE_NAMES
+      ? process.env.REMOTE_NAMES.split(/[,\s]+/).filter(Boolean)
+      : null;
+    const selectedNames = envSelectedNames
+      ? envSelectedNames
+      : (
+          await inquirer.prompt([
+            {
+              type: "checkbox",
+              name: "selectedNames",
+              message: "Select which remotes to run:",
+              choices: remotes.map((r) => r.name),
+              default: [],
+            },
+          ])
+        ).selectedNames;
 
     const selectedRemotes = remotes.filter((r) =>
       selectedNames.includes(r.name)

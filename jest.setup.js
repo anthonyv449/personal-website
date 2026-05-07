@@ -5,3 +5,14 @@ if (typeof global.TextEncoder === 'undefined') {
 if (typeof global.TextDecoder === 'undefined') {
   global.TextDecoder = TextDecoder;
 }
+
+global.IntersectionObserver = class IntersectionObserver {
+  constructor(callback) {
+    this.callback = callback;
+  }
+  observe(element) {
+    this.callback([{ isIntersecting: true, target: element }]);
+  }
+  disconnect() {}
+  unobserve() {}
+};

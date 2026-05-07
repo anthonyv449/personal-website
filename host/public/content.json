@@ -22,6 +22,10 @@
     {
       "path": "/books",
       "title": "Books"
+    },
+    {
+      "title": "HumanProof",
+      "path": "/humanproof"
     }
   ]
 }

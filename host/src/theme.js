@@ -24,6 +24,30 @@ const lightColors = {
   cardBackground: "#ffffff",
 };
 
+/** Landing palette for HumanProof remote (Module Federation). Access via theme.humanProof in sx. */
+const humanProof = {
+  ink: "#0a0a08",
+  paper: "#f4f1eb",
+  paper2: "#ede9e0",
+  green: "#1a7a4a",
+  greenLight: "#d4edd9",
+  greenAccent: "#2db866",
+  amber: "#c4730a",
+  amberLight: "#fdecd0",
+  red: "#b02020",
+  redLight: "#fde8e8",
+  muted: "#6b6758",
+  border: "#ccc8bc",
+  white: "#fdfcf8",
+  certBg: "#111109",
+  certInner: "#0a0a08",
+  certBorder: "#1e1e18",
+  certMuted: "#444440",
+  certText: "#666660",
+  tagOfficial: "#1a4a8a",
+  tagOfficialBg: "#dce8f4",
+};
+
 export function createAppTheme(mode = "dark") {
   const c = mode === "dark" ? darkColors : lightColors;
 
@@ -41,6 +65,7 @@ export function createAppTheme(mode = "dark") {
         default: c.grayColor,
       },
     },
+    humanProof,
     typography: {
       fontFamily: "'Inter', sans-serif",
       h1: {
@@ -78,6 +103,24 @@ export function createAppTheme(mode = "dark") {
       },
       caption: {
         color: c.secondaryText,
+      },
+      humanProofBody: {
+        fontFamily: '"DM Mono", "Consolas", "Courier New", monospace',
+        fontSize: 15,
+        lineHeight: 1.6,
+        fontWeight: 300,
+      },
+      humanProofHeading: {
+        fontFamily:
+          '"Syne", "Helvetica Neue", "Arial Narrow", "Arial", sans-serif',
+        fontWeight: 800,
+        letterSpacing: "-0.03em",
+        lineHeight: 1.05,
+      },
+      humanProofSerif: {
+        fontFamily: '"Instrument Serif", "Georgia", "Times New Roman", serif',
+        fontStyle: "italic",
+        fontWeight: 400,
       },
     },
     components: {
